@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Winston.API/Winston.API.csproj" />
+  <Project Path="Winston.Core/Winston.Core.csproj" />
+</Solution>

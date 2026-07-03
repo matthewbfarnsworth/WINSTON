@@ -3,7 +3,7 @@ A simple project to keep track of how much money is owed between friends. Made t
 
 After one person pays for a whole trip, each remaining person owes
 ```
-(TotalCost + PersonalCost - everyone else's PersonalCost) / TotalUsers
+(TotalCost + sum of all PersonalCost) / TotalUsers + PersonalCost
 ```
 
 Every time you pay someone back for a trip, log your transaction to update the running totals of how much everyone owes each other.
@@ -11,8 +11,8 @@ Every time you pay someone back for a trip, log your transaction to update the r
 # Project Structure
 ```mermaid
 graph TD
-    UI["Winston.UI (Angular Frontend)"] --> API["Winston.API (ASP.NET API)"]
-    API --> Core["Winston.Core"]
+    UI["Winston.UI (Angular)"] --> API["Winston.API (ASP.NET Core)"]
+    API --> Core["Winston.Core (Class Library)"]
     API --> DB[("Azure SQL Database")]
     API --> Blob[("Azure Blob Storage")]
 ```
@@ -96,7 +96,7 @@ A form to create or edit a new `Transaction` object. On creation, `OwnerId` is a
 ## Trips
 A list with the following for each `Trip`:
 * "`Name`:" with accordion list for each `User` in `TripUsers[]`
-    * "`User`: $`xx.xx`" where the amount is `(TotalCost + PersonalCost - everyone else's PersonalCost) / TotalUsers`
+    * "`User`: $`xx.xx`" where the amount is `(TotalCost + sum of all PersonalCost) / TotalUsers + PersonalCost`
 * "Edit Trip" button, opens the Edit Trip page for the `Trip`
 
 ## Transactions
