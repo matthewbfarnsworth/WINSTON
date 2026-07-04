@@ -3,7 +3,7 @@ A simple project to keep track of how much money is owed between friends. Made t
 
 After one person pays for a whole trip, each remaining person owes
 ```
-(TotalCost + sum of all PersonalCost) / TotalUsers + PersonalCost
+(TotalCost - sum of all PersonalCost) / TotalUsers + PersonalCost
 ```
 
 Every time you pay someone back for a trip, log your transaction to update the running totals of how much everyone owes each other.
@@ -35,7 +35,7 @@ graph TD
 | `Name` | Name/title of the trip |
 | `Date` | Date of the trip |
 | `Total` | Total cost of the trip |
-| `TripUsers[]` | List of users participating in the trip |
+| `TripUsers` | List of users participating in the trip (linked with join table) |
 | `Notes` | Additional notes (optional) |
 | `ReceiptImageUrl` | URL to the uploaded receipt image (optional) |
 
@@ -45,7 +45,7 @@ graph TD
 | :--- | :--- |
 | `UserId` | Reference to the user |
 | `TripId` | Reference to the trip |
-| `PersonalCost` | Specific personal cost for this user (optional) |
+| `PersonalCost` | Specific, additional portion of total cost that is just for this user |
 
 ### `Transaction`
 
@@ -57,7 +57,7 @@ graph TD
 | `Date` | Date of the transaction |
 | `Cost` | Amount paid |
 | `RecipientDidNotReceive` | Flag indicating if the recipient has marked it as not received |
-| `Notes` | Additional notes |
+| `Notes` | Additional notes (optional) |
 
 # Pages
 ## Login
@@ -96,7 +96,7 @@ A form to create or edit a new `Transaction` object. On creation, `OwnerId` is a
 ## Trips
 A list with the following for each `Trip`:
 * "`Name`:" with accordion list for each `User` in `TripUsers[]`
-    * "`User`: $`xx.xx`" where the amount is `(TotalCost + sum of all PersonalCost) / TotalUsers + PersonalCost`
+    * "`User`: $`xx.xx`" where the amount is `(TotalCost - sum of all PersonalCost) / TotalUsers + PersonalCost`
 * "Edit Trip" button, opens the Edit Trip page for the `Trip`
 
 ## Transactions
