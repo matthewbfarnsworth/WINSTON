@@ -10,10 +10,12 @@ namespace Winston.API.Controllers;
 public class TripsController : ControllerBase
 {
     private readonly WinstonDbContext _context;
+    private readonly IStorageService _storageService;
 
-    public TripsController(WinstonDbContext context)
+    public TripsController(WinstonDbContext context, IStorageService storageService)
     {
         _context = context;
+        _storageService = storageService;
     }
 
     [HttpGet]
@@ -82,5 +84,19 @@ public class TripsController : ControllerBase
         _context.Trips.Remove(trip);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPost("upload")]
+    public async Task<IActionResult> UploadReceipt(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded");
+        }
+        using (var stream = file.OpenReadStream())
+        {
+            var fileUrl = await _storageService.UploadFileAsync(stream, file.FileName);
+            return Ok(new { url = fileUrl });
+        }
     }
 }
