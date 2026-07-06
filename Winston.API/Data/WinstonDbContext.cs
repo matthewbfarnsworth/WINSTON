@@ -38,5 +38,11 @@ public class WinstonDbContext : DbContext
             .WithMany()
             .HasForeignKey(transaction => transaction.RecipientId)
             .OnDelete(DeleteBehavior.Restrict);
+        //TODO remove dummy data
+        modelBuilder.Entity<User>().HasData(
+            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Name = "User1" },
+            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "User2" },
+            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "User3" }
+        );
     }
 }
