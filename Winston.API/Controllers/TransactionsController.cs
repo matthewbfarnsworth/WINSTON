@@ -10,10 +10,12 @@ namespace Winston.API.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly WinstonDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TransactionsController(WinstonDbContext context)
+    public TransactionsController(WinstonDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     [HttpGet]
@@ -42,6 +44,7 @@ public class TransactionsController : ControllerBase
     public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
     {
         if (transaction.Id == Guid.Empty) transaction.Id = Guid.NewGuid();
+        if (transaction.SenderId == Guid.Empty) transaction.SenderId = _currentUserService.GetCurrentUserId();
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);

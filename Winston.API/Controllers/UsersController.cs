@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Winston.API.Data;
 using Winston.Core;
 
@@ -10,10 +11,21 @@ namespace Winston.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly WinstonDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UsersController(WinstonDbContext context)
+    public UsersController(WinstonDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    [HttpGet("me")]
+    public async Task<ActionResult<User>> GetCurrentUser()
+    {
+        var currentUserId = _currentUserService.GetCurrentUserId();
+        var user = await _context.Users.FindAsync(currentUserId);
+        if (user == null) return NotFound();
+        return user;
     }
 
     [HttpGet]

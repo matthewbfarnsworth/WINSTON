@@ -11,11 +11,13 @@ public class TripsController : ControllerBase
 {
     private readonly WinstonDbContext _context;
     private readonly IStorageService _storageService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TripsController(WinstonDbContext context, IStorageService storageService)
+    public TripsController(WinstonDbContext context, IStorageService storageService, ICurrentUserService currentUserService)
     {
         _context = context;
         _storageService = storageService;
+        _currentUserService = currentUserService;
     }
 
     [HttpGet]
@@ -46,6 +48,7 @@ public class TripsController : ControllerBase
     public async Task<ActionResult<Trip>> CreateTrip(Trip trip)
     {
         if (trip.Id == Guid.Empty) trip.Id = Guid.NewGuid();
+        trip.OwnerId = _currentUserService.GetCurrentUserId();
         _context.Trips.Add(trip);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetTrip), new { id = trip.Id }, trip);
