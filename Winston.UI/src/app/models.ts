@@ -9,6 +9,7 @@ export interface TripUser {
     tripId?: string;
     trip?: Trip | null;
     personalCost: number;
+    split?: number;
 }
 
 export interface Trip {

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Winston.Core;
 
 public class TripUser
@@ -7,4 +9,6 @@ public class TripUser
     public Guid TripId { get; set; }
     public Trip? Trip { get; set; }
     public decimal PersonalCost { get; set; } = 0.00M;
+    [NotMapped]
+    public decimal Split { get; set; }
 }

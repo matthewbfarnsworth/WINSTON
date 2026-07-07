@@ -23,12 +23,23 @@ public class TripsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Trip>>> GetTrips()
     {
-        return await _context.Trips
+        var trips = await _context.Trips
             .Include(trip => trip.Owner)
             .Include(trip => trip.TripUsers)
                 .ThenInclude(tripUser => tripUser.User)
             .OrderByDescending(trip => trip.Date)
             .ToListAsync();
+        
+        foreach (var trip in trips)
+        {
+            var splits = TripSplitCalculator.CalculateSplits(trip);
+            foreach (var tripUser in trip.TripUsers)
+            {
+                tripUser.Split = splits.GetValueOrDefault(tripUser.UserId);
+            }
+        }
+
+        return trips;
     }
 
     [HttpGet("{id}")]
@@ -41,6 +52,12 @@ public class TripsController : ControllerBase
             .FirstOrDefaultAsync(trip => trip.Id == id);
 
         if (trip == null) return NotFound();
+
+        var splits = TripSplitCalculator.CalculateSplits(trip);
+        foreach (var tripUser in trip.TripUsers)
+        {
+            tripUser.Split = splits.GetValueOrDefault(tripUser.UserId);
+        }
         return trip;
     }
 
@@ -76,6 +93,14 @@ public class TripsController : ControllerBase
             .Include(trip => trip.TripUsers)
                 .ThenInclude(tripUser => tripUser.User)
             .FirstOrDefaultAsync(trip => trip.Id == id);
+        if (reloadedTrip != null)
+        {
+            var splits = TripSplitCalculator.CalculateSplits(reloadedTrip);
+            foreach (var tripUser in reloadedTrip.TripUsers)
+            {
+                tripUser.Split = splits.GetValueOrDefault(tripUser.UserId);
+            }
+        }
         return Ok(reloadedTrip);
     }
 

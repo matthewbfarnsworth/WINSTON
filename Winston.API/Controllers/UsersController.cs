@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Winston.API.Data;
 using Winston.Core;
 
@@ -26,6 +25,18 @@ public class UsersController : ControllerBase
         var user = await _context.Users.FindAsync(currentUserId);
         if (user == null) return NotFound();
         return user;
+    }
+
+    [HttpGet("balances")]
+    public async Task<ActionResult<Dictionary<Guid, decimal>>> GetBalances()
+    {
+        var currentUserId = _currentUserService.GetCurrentUserId();
+        var trips = await _context.Trips
+            .Include(trip => trip.TripUsers)
+            .ToListAsync();
+        var transactions = await _context.Transactions.ToListAsync();
+        var balances = BalanceCalculator.CalculateBalances(currentUserId, trips, transactions);
+        return Ok(balances);
     }
 
     [HttpGet]
