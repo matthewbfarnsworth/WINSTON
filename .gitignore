@@ -30,7 +30,6 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
 .sass-cache/
 /connect.lock
 /coverage
@@ -58,6 +57,7 @@ obj/
 appsettings.Development.json
 
 # Angular
+*/.angular/cache
 node_modules/
 
 # User-uploaded files
