@@ -61,4 +61,4 @@ appsettings.Development.json
 node_modules/
 
 # User-uploaded files
-Winston.API/wwroot/uploads/
+Winston.API/wwwroot/uploads/
