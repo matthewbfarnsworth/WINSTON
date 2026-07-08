@@ -10,6 +10,19 @@ export class ApiService {
     private apiUrl = 'http://localhost:5211/api';
     //TODO remove mock auth
     public currentUserId = '00000000-0000-0000-0000-000000000001';
+
+    //TODO remove mock auth
+    public login(userId: string) {
+        this.currentUserId = userId;
+        localStorage.setItem('winston_user_id', userId);
+    }
+
+    //TODO remove mock auth
+    public logout() {
+        this.currentUserId = '';
+        localStorage.removeItem('winston_user_id');
+    }
+
     private getOptions() {
         return {
             headers: {
