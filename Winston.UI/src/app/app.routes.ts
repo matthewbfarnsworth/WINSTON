@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { ApiService } from './services/api';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'home', pathMatch: 'full' },
+    { path: '', redirectTo: () => inject(ApiService).currentUserId ? 'home' : 'login', pathMatch: 'full' },
     {
         path: 'login',
         loadComponent: () => import('./pages/login/login').then(module => module.Login)

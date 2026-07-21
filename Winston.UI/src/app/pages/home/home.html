@@ -1,1 +1,13 @@
-<p>home works!</p>
+<div class="space-y-2">
+    @for (user of users(); track user.id) {
+        @if (user.id !== currentUser()?.id && !hasNoBalance(user.id!)) {
+            <p class="text-base text-slate-800 font-medium">
+                @if (userOwesMe(user.id!)) {
+                    {{ user.name }} owes you ${{ getDisplayBalance(user.id!) }}
+                } @else {
+                    {{ user.name }} is owed ${{ getDisplayBalance(user.id!) }}
+                }
+            </p>
+        }
+    }
+</div>

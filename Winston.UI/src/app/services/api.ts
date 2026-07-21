@@ -9,7 +9,7 @@ export class ApiService {
     //TODO replace when deploying to azure
     private apiUrl = 'http://localhost:5211/api';
     //TODO remove mock auth
-    public currentUserId = '00000000-0000-0000-0000-000000000001';
+    public currentUserId = localStorage.getItem('winston_user_id') || '';
 
     //TODO remove mock auth
     public login(userId: string) {
@@ -37,6 +37,10 @@ export class ApiService {
 
     getCurrentUser(): Observable<User> {
         return this.http.get<User>(`${this.apiUrl}/users/me`, this.getOptions());
+    }
+
+    getBalances(): Observable<{ [userId: string]: number }> {
+        return this.http.get<{ [userId: string]: number }>(`${this.apiUrl}/users/balances`, this.getOptions());
     }
 
     createUser(user: User): Observable<User> {
