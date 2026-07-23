@@ -43,4 +43,8 @@ export class Trips {
   protected formatMoney(amount: number | undefined): string {
     return (amount || 0).toFixed(2);
   }
+
+  protected isOwner(ownerId: string): boolean {
+    return ownerId === this.apiService.currentUserId;
+  }
 }

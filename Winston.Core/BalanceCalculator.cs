@@ -19,6 +19,7 @@ public static class BalanceCalculator
                     var otherUserId = split.Key;
                     if (otherUserId == userId) continue;
                     var splitAmount = split.Value;
+                    if (!balances.ContainsKey(otherUserId)) balances[otherUserId] = 0;
                     balances[otherUserId] += splitAmount;
                 }
             }
@@ -37,18 +38,15 @@ public static class BalanceCalculator
             if (transaction.RecipientDidNotReceive) continue;
             if (transaction.SenderId == userId)
             {
-                if (transaction.SenderId == userId)
-                {
-                    var recipientId = transaction.RecipientId;
-                    if (!balances.ContainsKey(recipientId)) balances[recipientId] = 0;
-                    balances[recipientId] += transaction.Cost;
-                }
-                else if (transaction.RecipientId == userId)
-                {
-                    var senderId = transaction.SenderId;
-                    if (!balances.ContainsKey(senderId)) balances[senderId] = 0;
-                    balances[senderId] -= transaction.Cost;
-                }
+                var recipientId = transaction.RecipientId;
+                if (!balances.ContainsKey(recipientId)) balances[recipientId] = 0;
+                balances[recipientId] += transaction.Cost;
+            }
+            else if (transaction.RecipientId == userId)
+            {
+                var senderId = transaction.SenderId;
+                if (!balances.ContainsKey(senderId)) balances[senderId] = 0;
+                balances[senderId] -= transaction.Cost;
             }
         }
 

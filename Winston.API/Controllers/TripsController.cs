@@ -64,6 +64,10 @@ public class TripsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Trip>> CreateTrip(Trip trip)
     {
+        if (string.IsNullOrWhiteSpace(trip.Name) || trip.Total <= 0)
+        {
+            return BadRequest("Invalid trip data");
+        }
         if (trip.Id == Guid.Empty) trip.Id = Guid.NewGuid();
         trip.OwnerId = _currentUserService.GetCurrentUserId();
         _context.Trips.Add(trip);
@@ -80,6 +84,14 @@ public class TripsController : ControllerBase
             .FirstOrDefaultAsync(trip => trip.Id == id);
         
         if (existingTrip == null) return NotFound();
+        if (existingTrip.OwnerId != _currentUserService.GetCurrentUserId())
+        {
+            return Forbid();
+        }
+        if (string.IsNullOrWhiteSpace(updatedTrip.Name) || updatedTrip.Total <= 0)
+        {
+            return BadRequest("Invalid trip data");
+        }
         _context.Entry(existingTrip).CurrentValues.SetValues(updatedTrip);
         _context.TripUsers.RemoveRange(existingTrip.TripUsers);
         foreach (var newUser in updatedTrip.TripUsers)
@@ -109,6 +121,10 @@ public class TripsController : ControllerBase
     {
         var trip = await _context.Trips.FindAsync(id);
         if (trip == null) return NotFound();
+        if (trip.OwnerId != _currentUserService.GetCurrentUserId())
+        {
+            return Forbid();
+        }
         _context.Trips.Remove(trip);
         await _context.SaveChangesAsync();
         return NoContent();
