@@ -98,10 +98,10 @@ export class EditTrip {
     const availableUser = this.allUsers().find(user =>
       !this.tripUsers().some(tripUser => tripUser.userId === user.id)
     );
-    const userIdToAdd = availableUser?.id || this.allUsers()[0]?.id || '';
+    if (!availableUser || !availableUser.id) return;
     this.tripUsers.update(list => [
       ...list,
-      { userId: userIdToAdd, personalCost: 0 }
+      { userId: availableUser.id!, personalCost: 0 }
     ]);
   }
 
@@ -171,7 +171,7 @@ export class EditTrip {
     if (count === 0) return [];
     const sumPersonal = usersList.reduce((sum, tripUser) => sum + (tripUser.personalCost || 0), 0);
     const sharedTotal = this.total() - sumPersonal;
-    const baseShare = Math.round((sharedTotal / count) * 100) / 100;
+    const baseShare = Math.floor((sharedTotal / count) * 100) / 100;
 
     return usersList
       .filter(tripUser => tripUser.userId !== currentUserId)

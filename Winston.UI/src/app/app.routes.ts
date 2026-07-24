@@ -1,43 +1,50 @@
 import { Routes } from '@angular/router';
-import { inject } from '@angular/core';
-import { ApiService } from './services/api';
+import { authGuard } from './app';
 
 export const routes: Routes = [
-    { path: '', redirectTo: () => inject(ApiService).currentUserId ? 'home' : 'login', pathMatch: 'full' },
+    { path: '', redirectTo: 'home', pathMatch: 'full' },
     {
         path: 'login',
         loadComponent: () => import('./pages/login/login').then(module => module.Login)
     },
     {
         path: 'home',
-        loadComponent: () => import('./pages/home/home').then(module => module.Home)
+        loadComponent: () => import('./pages/home/home').then(module => module.Home),
+        canActivate: [authGuard]
     },
     {
         path: 'trips',
-        loadComponent: () => import('./pages/trips/trips').then(module => module.Trips)
+        loadComponent: () => import('./pages/trips/trips').then(module => module.Trips),
+        canActivate: [authGuard]
     },
     {
         path: 'trips/new',
-        loadComponent: () => import('./pages/edit-trip/edit-trip').then(module => module.EditTrip)
+        loadComponent: () => import('./pages/edit-trip/edit-trip').then(module => module.EditTrip),
+        canActivate: [authGuard]
     },
     {
         path: 'trips/edit/:id', 
-        loadComponent: () => import('./pages/edit-trip/edit-trip').then(module => module.EditTrip)
+        loadComponent: () => import('./pages/edit-trip/edit-trip').then(module => module.EditTrip),
+        canActivate: [authGuard]
     },
     {
         path: 'transactions',
-        loadComponent: () => import('./pages/transactions/transactions').then(module => module.Transactions)
+        loadComponent: () => import('./pages/transactions/transactions').then(module => module.Transactions),
+        canActivate: [authGuard]
     },
     {
         path: 'transactions/new',
-        loadComponent: () => import('./pages/edit-transaction/edit-transaction').then(module => module.EditTransaction)
+        loadComponent: () => import('./pages/edit-transaction/edit-transaction').then(module => module.EditTransaction),
+        canActivate: [authGuard]
     },
     {
         path: 'transactions/edit/:id',
-        loadComponent: () => import('./pages/edit-transaction/edit-transaction').then(module => module.EditTransaction)
+        loadComponent: () => import('./pages/edit-transaction/edit-transaction').then(module => module.EditTransaction),
+        canActivate: [authGuard]
     },
     {
         path: 'settings',
-        loadComponent: () => import('./pages/settings/settings').then(module => module.Settings)
+        loadComponent: () => import('./pages/settings/settings').then(module => module.Settings),
+        canActivate: [authGuard]
     }
 ];

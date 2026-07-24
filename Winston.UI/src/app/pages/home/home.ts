@@ -1,6 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ɵgetUnknownElementStrictMode } from '@angular/core';
 import { ApiService } from '../../services/api';
 import { User } from '../../models';
+
+export interface UserBalanceView {
+  userId: string;
+  name: string;
+  amount: string;
+  userOwesMe: boolean;
+}
 
 @Component({
   selector: 'app-home',
@@ -14,6 +21,25 @@ export class Home {
   protected users = signal<User[]>([]);
   protected balances = signal<{ [userId: string]: number }>({});
   protected isLoading = signal(true);
+  protected displayBalances = computed<UserBalanceView[]>(() => {
+    const current = this.currentUser();
+    const allUsers = this.users();
+    const balanceMap = this.balances();
+    if (!current) return [];
+    return allUsers
+      .filter(user => user.id && user.id !== current.id)
+      .map(user => {
+        const rawBalance = balanceMap[user.id!] || 0;
+        return {
+          userId: user.id!,
+          name: user.name,
+          amount: Math.abs(rawBalance).toFixed(2),
+          userOwesMe: rawBalance > 0,
+          hasBalance: Math.abs(rawBalance) >= 0.01
+        };
+      })
+        .filter(item => item.hasBalance);
+  });
 
   constructor() {
     this.loadData();
@@ -21,25 +47,10 @@ export class Home {
 
   private loadData() {
     this.apiService.getCurrentUser().subscribe(user => this.currentUser.set(user));
-    this.apiService.getUsers().subscribe(users => {
-      this.users.set(users);
-      this.apiService.getBalances().subscribe(balances => {
-        this.balances.set(balances);
-        this.isLoading.set(false);
-      });
+    this.apiService.getUsers().subscribe(users => this.users.set(users));
+    this.apiService.getBalances().subscribe(balances => {
+      this.balances.set(balances);
+      this.isLoading.set(false);
     })
-  }
-
-  protected hasNoBalance(userId: string): boolean {
-    const balance = this.balances()[userId];
-    return !balance || Math.abs(balance) < 0.01;
-  }
-
-  protected getDisplayBalance(userId: string): string {
-    return Math.abs(this.balances()[userId] || 0).toFixed(2);
-  }
-
-  protected userOwesMe(userId: string): boolean {
-    return (this.balances()[userId] || 0) > 0;
   }
 }

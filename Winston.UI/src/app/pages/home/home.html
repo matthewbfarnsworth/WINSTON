@@ -1,11 +1,14 @@
 <div class="space-y-2">
-    @for (user of users(); track user.id) {
-        @if (user.id !== currentUser()?.id && !hasNoBalance(user.id!)) {
+    @if (isLoading()) {
+        <div class="text-xs text-slate-400">Loading balances...</div>
+    } @else {
+        @for (item of displayBalances(); track item.userId) {
             <p class="text-base text-slate-800 font-medium">
-                @if (userOwesMe(user.id!)) {
-                    {{ user.name }} owes you ${{ getDisplayBalance(user.id!) }}
-                } @else {
-                    {{ user.name }} is owed ${{ getDisplayBalance(user.id!) }}
+                @if (item.userOwesMe) {
+                    {{ item.name }} owes you ${{ item.amount }}
+                }
+                @else {
+                    {{ item.name }} is owed ${{ item.amount }}
                 }
             </p>
         }

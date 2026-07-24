@@ -1,7 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterOutlet, RouterLink, NavigationEnd, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, CanActivateFn } from '@angular/router';
 import { ApiService } from './services/api';
+
+export const authGuard: CanActivateFn = () => {
+  const apiService = inject(ApiService);
+  const router = inject(Router);
+  if (apiService.currentUserId) {
+    return true;
+  }
+  return router.createUrlTree(['/login']);
+};
 
 @Component({
   selector: 'app-root',
@@ -15,14 +23,5 @@ export class App {
   
   protected currentUrl = signal('');
 
-  constructor() {
-    if (!this.apiService.currentUserId) {
-      this.router.navigate(['/login']);
-    }
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
-    ).subscribe(event => {
-      this.currentUrl.set(event.urlAfterRedirects);
-    })
-  }
+  constructor() {}
 }
