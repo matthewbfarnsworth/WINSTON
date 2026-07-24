@@ -1,1 +1,31 @@
-<p>transactions works!</p>
+<div class="space-y-4">
+    <div>
+        <a routerLink="/transactions/new" class="text-sm font-semibold text-cyan-600 hover:underline">
+            + New Transaction
+        </a>
+    </div>
+
+    @if (isLoading()) {
+        <div class="text-xs text-slate-400">Loading transactions...</div>
+    } @else {
+        <div class="space-y-3">
+            @for (transaction of sortedTransactions(); track transaction.id) {
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <p class="text-sm text-slate-800 font-medium">
+                            {{ transaction.sender?.name || 'User' }} paid {{ transaction.recipient?.name || 'User' }} ${{ formatMoney(transaction.cost) }} on {{ transaction.date | date:'shortDate' }}
+                        </p>
+                        @if (transaction.recipientDidNotReceive) {
+                            <p class="text-xs font-semibold text-red-600 mt-1">Not Received!</p>
+                        }
+                    </div>
+                    @if (isRecipient(transaction.recipientId)) {
+                        <button (click)="toggleReceived(transaction.id!)" class="text-xs font-semibold text-cyan-600 hover:underline">
+                            {{ transaction.recipientDidNotReceive ? 'Received?' : 'Did Not Receive?' }}
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
