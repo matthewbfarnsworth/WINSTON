@@ -104,11 +104,10 @@ A list with the following for each `Transaction`:
 * "`Sender` paid `Recipient` $`xx.xx` on `Date`"
 * "Not Received!" text if `RecipientDidNotReceive` is set
 * "Did Not Receive?" button, which appears for the Recipient if `RecipientDidNotReceive` is not set, and changes to a "Received?" button if `RecipientDidNotReceive` is set
+The list is sorted first in order of ones marked `RecipientDidNotReceive` and then in order of `Date`.
 
 ## Settings
 * "Logout" button
-
-The list is sorted first in order of ones marked `RecipientDidNotReceive` and then in order of `Date`.
 
 # Angular Notes
 
