@@ -1,0 +1,33 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans pb-20">
+    <header class="bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-900">Winston</span>
+        </div>
+        <a routerLink="/settings" title="Settings" class="shrink-0">
+            <app-avatar [name]="currentUser()?.name" [avatarUrl]="currentUser()?.avatarUrl" />
+        </a>
+    </header>
+
+    <main class="grow w-full max-w-md mx-auto p-4">
+        <router-outlet></router-outlet>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 h-16 flex items-center justify-around z-50">
+      <a routerLink="/home" routerLinkActive="text-cyan-600 font-semibold" [routerLinkActiveOptions]="{ exact: true }"
+          class="text-sm text-slate-500 hover:text-cyan-600 transition-colors">
+        Home
+      </a>
+      <a routerLink="/trips" routerLinkActive="text-cyan-600 font-semibold"
+          class="text-sm text-slate-500 hover:text-cyan-600 transition-colors">
+        Trips
+      </a>
+      <a routerLink="/transactions" routerLinkActive="text-cyan-600 font-semibold"
+          class="text-sm text-slate-500 hover:text-cyan-600 transition-colors">
+        Transactions
+      </a>
+      <a routerLink="/settings" routerLinkActive="text-cyan-600 font-semibold"
+          class="text-sm text-slate-500 hover:text-cyan-600 transition-colors">
+        Settings
+      </a>
+    </nav>
+</div>
