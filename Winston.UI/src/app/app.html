@@ -6,6 +6,9 @@
         <span class="bg-cyan-600 text-white w-6 h-6 rounded flex items-center justify-center text-sm font-bold">W</span>
         <span class="font-bold text-slate-900">Winston</span>
       </div>
+      <a routerLink="/settings" title="Settings" class="shrink-0">
+        <app-avatar [name]="currentUser()?.name" [avatarUrl]="currentUser()?.avatarUrl" />
+      </a>
     </header>
 
     <main class="grow w-full max-w-md mx-auto p-4">

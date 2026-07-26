@@ -1,16 +1,19 @@
-<div class="space-y-2">
+<div class="space-y-3">
     @if (isLoading()) {
         <div class="text-xs text-slate-400">Loading balances...</div>
     } @else {
         @for (item of displayBalances(); track item.userId) {
-            <p class="text-base text-slate-800 font-medium">
-                @if (item.userOwesMe) {
-                    {{ item.name }} owes you ${{ item.amount }}
-                }
-                @else {
-                    {{ item.name }} is owed ${{ item.amount }}
-                }
-            </p>
+            <div class="flex items-center space-x-3">
+                <app-avatar [name]="item.name" [avatarUrl]="item.avatarUrl"></app-avatar>
+                <p class="text-base text-slate-800 font-medium">
+                    @if (item.userOwesMe) {
+                        {{ item.name }} owes you ${{ item.amount }}
+                    }
+                    @else {
+                        {{ item.name }} is owed ${{ item.amount }}
+                    }
+                </p>
+            </div>
         }
     }
 </div>

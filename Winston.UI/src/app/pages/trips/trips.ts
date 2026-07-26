@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Trip } from '../../models';
+import { Avatar } from '../../components/avatar/avatar';
 
 @Component({
   selector: 'app-trips',
-  imports: [RouterLink],
+  imports: [RouterLink, Avatar],
   templateUrl: './trips.html',
   styleUrl: './trips.css',
 })

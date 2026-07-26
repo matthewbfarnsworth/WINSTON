@@ -12,8 +12,20 @@
             @for (transaction of sortedTransactions(); track transaction.id) {
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div>
-                        <p class="text-sm text-slate-800 font-medium">
-                            {{ transaction.sender?.name || 'User' }} paid {{ transaction.recipient?.name || 'User' }} ${{ formatMoney(transaction.cost) }} on {{ transaction.date | date:'shortDate' }}
+                        <p class="text-sm text-slate-800 font-medium leading-normal">
+                            <app-avatar
+                                [name]="transaction.sender?.name"
+                                [avatarUrl]="transaction.sender?.avatarUrl"
+                                class="inline-flex align-middle mr-1"
+                            />
+                            {{ transaction.sender?.name || 'User' }} paid
+                            <app-avatar
+                                [name]="transaction.recipient?.name"
+                                [avatarUrl]="transaction.recipient?.avatarUrl"
+                                class="inline-flex align-middle mx-1"
+                            />
+                            {{ transaction.recipient?.name || 'User' }} ${{ formatMoney(transaction.cost) }} on {{ transaction.date | date:'shortDate' }}
+
                         </p>
                         @if (transaction.recipientDidNotReceive) {
                             <p class="text-xs font-semibold text-red-600 mt-1">Not Received!</p>

@@ -25,6 +25,7 @@ graph TD
 | :--- | :--- |
 | `Id` | Unique identifier |
 | `Name` | Name of the user |
+| `AvatarUrl` | URL to the avatar image of the user (optional) |
 
 ### `Trip`
 

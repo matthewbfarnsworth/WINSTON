@@ -3,10 +3,11 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Transaction } from '../../models';
+import { Avatar } from '../../components/avatar/avatar';
 
 @Component({
   selector: 'app-transactions',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, Avatar],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
 })
