@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { ApiService } from '../../services/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -6,4 +8,12 @@ import { Component } from '@angular/core';
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
-export class Settings {}
+export class Settings {
+  private apiService = inject(ApiService);
+  private router = inject(Router);
+
+  protected onLogout() {
+    this.apiService.logout();
+    this.router.navigate(['/login']);
+  }
+}
