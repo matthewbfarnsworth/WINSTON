@@ -1,125 +1,88 @@
 <div class="max-w-md mx-auto space-y-4">
     @if (isLoading()) {
         <div class="flex items-center justify-between gap-4">
-            <div class="text-xs text-slate-400">Loading form...</div>
-            <a routerLink="/trips" class="text-xs text-slate-500 hover:text-slate-800">Back</a>
+            <app-loading-state />
+            <app-link-button routerLink="/trips" variant="muted">Back</app-link-button>
         </div>
     } @else {
         <div class="flex items-center justify-between gap-4">
-            <input type="text"
-                [ngModel]="name()"
-                (ngModelChange)="name.set($event)"
-                placeholder="New Trip"
-                class="text-xl font-bold text-slate-900 tracking-tight border-b border-transparent hover:border-slate-300 focus:border-cyan-600 focus:outline-none w-full py-0.5" />
-            <a routerLink="/trips" class="text-xs text-slate-500 hover:text-slate-800">Back</a>
+            <h1 class="grow">
+                <input type="text"
+                    [ngModel]="name()"
+                    (ngModelChange)="name.set($event)"
+                    placeholder="New Trip"
+                    class="text-xl font-bold text-slate-900 tracking-tight border-b border-transparent hover:border-slate-300 focus:border-cyan-600 focus:outline-none w-full py-0.5" />
+            </h1>
+            <app-link-button routerLink="/trips" variant="muted">Back</app-link-button>
         </div>
+
 
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Date:</label>
-                <input type="date"
-                    [ngModel]="date()"
-                    (ngModelChange)="date.set($event)"
-                    class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600" />
+                <app-date-input [(value)]="date" />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Total:</label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-3 text-slate-500 text-sm font-semibold">$</span>
-                    <input type="text"
-                        inputmode="decimal"
-                        placeholder="0.00"
-                        [value]="total() || ''"
-                        (input)="updateTotal($event)"
-                        (blur)="formatTotalOnBlur($event)"
-                        class="w-full pl-7 pr-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600" />
-                </div>
+                <app-currency-input [(value)]="total" />
             </div>
             <div class="border-t border-b border-slate-200 py-3 space-y-2">
                 <div class="flex items-center justify-between">
                     <label class="text-xs font-semibold text-slate-700">Users:</label>
-                    <button type="button"
-                        (click)="addUser()"
-                        [disabled]="!canAddMoreUsers()"
-                        class="text-xs font-semibold text-cyan-600 hover:underline disabled:text-slate-300 disabled:no-underline">
+                    <app-small-button (buttonClick)="addUser()" [disabled]="!canAddMoreUsers()">
                         + Add User
-                    </button>
+                    </app-small-button>
                 </div>
                 <div class="space-y-2">
-                    @for (tripUser of tripUsers(); track $index) {
+                    @for (tripUser of tripUsers(); track tripUser.userId) {
                         <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded border border-slate-200">
-                            <select [ngModel]="tripUser.userId"
-                                (ngModelChange)="updateUserId($index, $event)"
+                            <app-user-select
+                                [users]="getAvailableUsersForDropdown(tripUser.userId)"
+                                [value]="tripUser.userId"
+                                (valueChange)="updateUserId($index, $event)"
                                 [disabled]="isOwner(tripUser.userId)"
-                                class="grow text-xs p-1 border border-slate-300 rounded bg-white disabled:bg-slate-100">
-                                @for (user of getAvailableUsersForDropdown(tripUser.userId); track (user.id || $index)) {
-                                    <option [value]="user.id">{{ user.name }}</option>
-                                }
-                            </select>
-                            <div class="flex items-center space-x-1">
+                                [compact]="true"
+                                class="grow min-w-0" />
+                            <div class="flex items-center space-x-1 shrink-0">
                                 <label class="text-xs text-slate-600 font-medium whitespace-nowrap">Personal:</label>
-                                <div class="relative flex items-center w-24">
-                                    <span class="absolute left-2 text-slate-400 text-xs">$</span>
-                                    <input type="text"
-                                        inputmode="decimal"
-                                        placeholder="0.00"
-                                        [value]="tripUser.personalCost || ''"
-                                        (input)="updatePersonalCost($index, $event)"
-                                        (blur)="formatPersonalCostOnBlur($index, $event)"
-                                        class="w-full pl-5 pr-1.5 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:border-cyan-600" />
-                                </div>
+                                <app-currency-input
+                                    [value]="tripUser.personalCost || 0"
+                                    (valueChange)="updatePersonalCost($index, $event)"
+                                    [compact]="true" />
                             </div>
-                            <div class="w-5 flex justify-center">
+                            <div class="w-5 flex justify-center shrink-0">
                                 @if (!isOwner(tripUser.userId)) {
-                                    <button type="button" (click)="removeUser($index)" class="text-xs text-rose-600 font-bold px-1">
-                                        x
-                                    </button>
+                                    <app-danger-button (buttonClick)="removeUser($index)">x</app-danger-button>
                                 }
                             </div>
                         </div>
                     }
                 </div>
+
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Upload receipt:</label>
-                <input type="file"
-                    (change)="onFileSelected($event)"
-                    class="text-xs text-slate-500 file:mr-2 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
-                @if (isUploading()) {
-                    <div class="text-xs text-cyan-600 mt-1">Uploading receipt...</div>
-                }
-                @if (receiptImageUrl()) {
-                    <div class="mt-2">
-                        <!-- TODO: Replace hardcoded localhost URL for Azure-->
-                        <img [src]="'http://localhost:5211' + receiptImageUrl()"
-                            alt="Receipt preview"
-                            class="max-h-36 rounded border border-slate-200 mt-1" />
-                    </div>
-                }
+                <app-file-upload
+                    [(imageUrl)]="receiptImageUrl"
+                    [isUploading]="isUploading()"
+                    (fileSelected)="onFileSelected($event)" />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Notes:</label>
-                <textarea rows="2"
-                    [ngModel]="notes()"
-                    (ngModelChange)="notes.set($event)"
-                    class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600"></textarea>
+                <app-notes-input [(value)]="notes" />
             </div>
             <div class="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
                 <label class="block text-xs font-semibold text-slate-700">Summary:</label>
                 @for (item of getSummarySplits(); track item.userName) {
                     <p class="text-xs text-slate-700">
-                        {{ item.userName }} owes you ${{ item.owesAmount.toFixed(2) }}
+                        {{ item.userName }} owes you {{ item.owesAmount | currency }}
                     </p>
-                } @empty {
-                    <p class="text-xs text-slate-400">No other users in trip.</p>
                 }
             </div>
             <div>
-                <button type="button"
-                    (click)="saveTrip()"
-                    [disabled]="!isFormValid()"
-                    class="w-full py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-semibold text-sm rounded shadow-sm transition-colors">Save Trip
-                </button>
+                <app-primary-button (buttonClick)="saveTrip()" [disabled]="!isFormValid()">
+                    Save Trip
+                </app-primary-button>
             </div>
         </div>
     }

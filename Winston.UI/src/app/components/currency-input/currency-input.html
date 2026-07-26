@@ -1,0 +1,23 @@
+<div class="relative flex items-center" [class.w-24]="compact()">
+  @if (compact()) {
+    <span class="absolute left-2 text-slate-400 text-xs">$</span>
+    <input type="text"
+      inputmode="decimal"
+      [placeholder]="placeholder()"
+      [value]="value() || ''"
+      (input)="onInput($event)"
+      (blur)="onBlur($event)"
+      class="w-full pl-5 pr-1.5 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-150 ease-in-out" />
+  } @else {
+    <span class="absolute left-3 text-slate-500 text-sm font-semibold">$</span>
+    <input type="text"
+      inputmode="decimal"
+      [placeholder]="placeholder()"
+      [value]="value() || ''"
+      (input)="onInput($event)"
+      (blur)="onBlur($event)"
+      class="w-full pl-7 pr-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-150 ease-in-out" />
+  }
+</div>
+
+

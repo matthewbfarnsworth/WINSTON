@@ -1,0 +1,9 @@
+<button [type]="type()"
+  [disabled]="disabled()"
+  (click)="onClick()"
+  class="w-full py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-semibold text-sm rounded shadow-sm cursor-pointer disabled:cursor-not-allowed transition-colors duration-150 ease-in-out">
+  <ng-content></ng-content>
+</button>
+
+
+

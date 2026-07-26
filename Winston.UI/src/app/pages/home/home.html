@@ -1,19 +1,24 @@
-<div class="space-y-3">
-    @if (isLoading()) {
-        <div class="text-xs text-slate-400">Loading balances...</div>
-    } @else {
-        @for (item of displayBalances(); track item.userId) {
-            <div class="flex items-center space-x-3">
-                <app-avatar [name]="item.name" [avatarUrl]="item.avatarUrl"></app-avatar>
-                <p class="text-base text-slate-800 font-medium">
-                    @if (item.userOwesMe) {
-                        {{ item.name }} owes you ${{ item.amount }}
-                    }
-                    @else {
-                        {{ item.name }} is owed ${{ item.amount }}
-                    }
-                </p>
-            </div>
+<div class="space-y-4">
+    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Balances</h1>
+    <div class="space-y-3">
+        @if (isLoading()) {
+            <app-loading-state />
+        } @else {
+            @for (item of displayBalances(); track item.userId) {
+                <app-list-row>
+                    <div class="flex items-center space-x-3">
+                        <app-avatar [name]="item.name" [avatarUrl]="item.avatarUrl" size="small"></app-avatar>
+                        <p class="text-sm text-slate-800 font-medium">
+                            @if (item.userOwesMe) {
+                                {{ item.name }} owes you {{ item.amount | currency }}
+                            }
+                            @else {
+                                {{ item.name }} is owed {{ item.amount | currency }}
+                            }
+                        </p>
+                    </div>
+                </app-list-row>
+            }
         }
-    }
+    </div>
 </div>

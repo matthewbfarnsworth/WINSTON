@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { ApiService } from '../../services/api';
 import { Router } from '@angular/router';
+import { PrimaryButton } from '../../components/primary-button/primary-button';
 
 @Component({
   selector: 'app-settings',
-  imports: [],
+  imports: [PrimaryButton],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })

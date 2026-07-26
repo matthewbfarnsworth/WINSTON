@@ -1,12 +1,36 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Trip, TripUser, User } from '../../models';
+import { CurrencyInput } from '../../components/currency-input/currency-input';
+import { DateInput } from '../../components/date-input/date-input';
+import { UserSelect } from '../../components/user-select/user-select';
+import { NotesInput } from '../../components/notes-input/notes-input';
+import { FileUpload } from '../../components/file-upload/file-upload';
+import { LoadingState } from '../../components/loading-state/loading-state';
+import { PrimaryButton } from '../../components/primary-button/primary-button';
+import { SmallButton } from '../../components/small-button/small-button';
+import { LinkButton } from '../../components/link-button/link-button';
+import { DangerButton } from '../../components/danger-button/danger-button';
 
 @Component({
   selector: 'app-edit-trip',
-  imports: [FormsModule, RouterLink],
+  imports: [
+    FormsModule,
+    CurrencyPipe,
+    CurrencyInput,
+    DateInput,
+    UserSelect,
+    NotesInput,
+    FileUpload,
+    LoadingState,
+    PrimaryButton,
+    SmallButton,
+    LinkButton,
+    DangerButton
+  ],
   templateUrl: './edit-trip.html',
   styleUrl: './edit-trip.css',
 })
@@ -80,19 +104,6 @@ export class EditTrip {
     });
   }
 
-  protected updateTotal(event: Event) {
-    const val = (event.target as HTMLInputElement).value;
-    const num = parseFloat(val);
-    this.total.set(isNaN(num) ? 0 : num);
-  }
-
-  protected formatTotalOnBlur(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const cost = Math.max(0, parseFloat(input.value) || 0);
-    this.total.set(cost);
-    input.value = cost > 0 ? cost.toFixed(2) : '';
-  }
-
   protected addUser() {
     if (!this.canAddMoreUsers()) return;
     const availableUser = this.allUsers().find(user =>
@@ -125,32 +136,15 @@ export class EditTrip {
     });
   }
 
-  protected updatePersonalCost(index: number, event: Event) {
-    const val = (event.target as HTMLInputElement).value;
-    const num = parseFloat(val);
-    const cost = isNaN(num) ? 0 : num;
-    this.tripUsers.update(list => {
-      const updated = [...list];
-      updated[index] = { ...updated[index], personalCost: cost };
-      return updated;
-    })
-  }
-
-  protected formatPersonalCostOnBlur(index: number, event: Event) {
-    const input = event.target as HTMLInputElement;
-    const cost = Math.max(0, parseFloat(input.value) || 0);
+  protected updatePersonalCost(index: number, cost: number) {
     this.tripUsers.update(list => {
       const updated = [...list];
       updated[index] = { ...updated[index], personalCost: cost };
       return updated;
     });
-    input.value = cost > 0 ? cost.toFixed(2) : '';
   }
 
-  protected onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
+  protected onFileSelected(file: File) {
     this.isUploading.set(true);
     this.apiService.uploadReceipt(file).subscribe({
       next: (resolution) => {
@@ -215,3 +209,4 @@ export class EditTrip {
     }
   }
 }
+

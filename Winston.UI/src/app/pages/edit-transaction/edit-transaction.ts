@@ -1,12 +1,28 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Transaction, User } from '../../models';
+import { CurrencyInput } from '../../components/currency-input/currency-input';
+import { DateInput } from '../../components/date-input/date-input';
+import { UserSelect } from '../../components/user-select/user-select';
+import { NotesInput } from '../../components/notes-input/notes-input';
+import { LoadingState } from '../../components/loading-state/loading-state';
+import { PrimaryButton } from '../../components/primary-button/primary-button';
+import { LinkButton } from '../../components/link-button/link-button';
 
 @Component({
   selector: 'app-edit-transaction',
-  imports: [FormsModule, RouterLink],
+  imports: [
+    FormsModule,
+    CurrencyInput,
+    DateInput,
+    UserSelect,
+    NotesInput,
+    LoadingState,
+    PrimaryButton,
+    LinkButton
+  ],
   templateUrl: './edit-transaction.html',
   styleUrl: './edit-transaction.css',
 })
@@ -82,19 +98,6 @@ export class EditTransaction {
     });
   }
 
-  protected updateCost(event: Event) {
-    const val = (event.target as HTMLInputElement).value;
-    const num = parseFloat(val);
-    this.cost.set(isNaN(num) ? 0: num);
-  }
-
-  protected formatCostOnBlur(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const amount = Math.max(0, parseFloat(input.value) || 0);
-    this.cost.set(amount);
-    input.value = amount > 0 ? amount.toFixed(2) : '';
-  }
-
   protected saveTransaction() {
     const transactionData: Transaction = {
       id: this.transactionId() || undefined,
@@ -116,3 +119,4 @@ export class EditTransaction {
     }
   }
 }
+

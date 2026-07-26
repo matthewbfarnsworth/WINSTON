@@ -1,63 +1,38 @@
 <div class="max-w-md mx-auto space-y-4">
     @if (isLoading()) {
         <div class="flex items-center justify-between gap-4">
-            <div class="text-xs text-slate-400">Loading form...</div>
-            <a routerLink="/transactions" class="text-xs text-slate-500 hover:text-slate-800">Back</a>
+            <app-loading-state />
+            <app-link-button routerLink="/transactions" variant="muted">Back</app-link-button>
         </div>
     } @else {
         <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-2">
             <h1 class="text-xl font-bold text-slate-900 tracking-tight">
                 {{ isEditMode() ? 'Edit Transaction' : 'New Transaction' }}
             </h1>
-            <a routerLink="/transactions" class="text-xs text-slate-500 hover:text-slate-800">Back</a>
+            <app-link-button routerLink="/transactions" variant="muted">Back</app-link-button>
         </div>
 
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Date:</label>
-                <input type="date"
-                    [ngModel]="date()"
-                    (ngModelChange)="date.set($event)"
-                    class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600" />
+                <app-date-input [(value)]="date" />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Recipient:</label>
-                <select
-                    [ngModel]="recipientId()"
-                    (ngModelChange)="recipientId.set($event)"
-                    class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none focus:border-cyan-600">
-                    @for (user of availableRecipients(); track (user.id || $index)) {
-                        <option [value]="user.id">{{ user.name }}</option>
-                    }
-                </select>
+                <app-user-select [users]="availableRecipients()" [(value)]="recipientId" />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Cost:</label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-3 text-slate-500 text-sm font-semibold">$</span>
-                    <input type="text"
-                        inputmode="decimal"
-                        placeholder="0.00"
-                        [value]="cost() || ''"
-                        (input)="updateCost($event)"
-                        (blur)="formatCostOnBlur($event)"
-                        class="w-full pl-7 pr-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600" />
-                </div>
+                <app-currency-input [(value)]="cost" />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Notes:</label>
-                <textarea rows="2"
-                    [ngModel]="notes()"
-                    (ngModelChange)="notes.set($event)"
-                    class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:border-cyan-600"></textarea>
+                <app-notes-input [(value)]="notes" />
             </div>
             <div>
-                <button type="button"
-                    (click)="saveTransaction()"
-                    [disabled]="!isFormValid()"
-                    class="w-full py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-semibold text-sm rounded shadow-sm transition-colors">
+                <app-primary-button (buttonClick)="saveTransaction()" [disabled]="!isFormValid()">
                     Save Transaction
-                </button>
+                </app-primary-button>
             </div>
         </div>
     }

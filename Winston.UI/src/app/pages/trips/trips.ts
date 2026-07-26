@@ -1,12 +1,16 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Trip } from '../../models';
 import { Avatar } from '../../components/avatar/avatar';
+import { LoadingState } from '../../components/loading-state/loading-state';
+import { ListRow } from '../../components/list-row/list-row';
+import { LinkButton } from '../../components/link-button/link-button';
+import { SmallButton } from '../../components/small-button/small-button';
 
 @Component({
   selector: 'app-trips',
-  imports: [RouterLink, Avatar],
+  imports: [Avatar, LoadingState, ListRow, LinkButton, CurrencyPipe],
   templateUrl: './trips.html',
   styleUrl: './trips.css',
 })
@@ -39,10 +43,6 @@ export class Trips {
     } else {
       this.expandedTripId.set(tripId);
     }
-  }
-
-  protected formatMoney(amount: number | undefined): string {
-    return (amount || 0).toFixed(2);
   }
 
   protected isOwner(ownerId: string): boolean {

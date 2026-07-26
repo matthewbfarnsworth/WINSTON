@@ -1,13 +1,16 @@
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { Transaction } from '../../models';
 import { Avatar } from '../../components/avatar/avatar';
+import { LoadingState } from '../../components/loading-state/loading-state';
+import { ListRow } from '../../components/list-row/list-row';
+import { LinkButton } from '../../components/link-button/link-button';
+import { SmallButton } from '../../components/small-button/small-button';
 
 @Component({
   selector: 'app-transactions',
-  imports: [DatePipe, RouterLink, Avatar],
+  imports: [DatePipe, Avatar, LoadingState, ListRow, LinkButton, SmallButton, CurrencyPipe],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
 })
@@ -49,11 +52,8 @@ export class Transactions {
     })
   }
 
-  protected formatMoney(amount: number | undefined): string {
-    return (amount || 0).toFixed(2);
-  }
-
   protected isRecipient(recipientId: string): boolean {
     return recipientId === this.apiService.currentUserId;
   }
 }
+

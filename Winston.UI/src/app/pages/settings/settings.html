@@ -1,9 +1,8 @@
 <div class="space-y-4">
+    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Settings</h1>
     <div>
-        <button type="button"
-            (click)="onLogout()"
-            class="w-full py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm rounded shadow-sm transition-colors">
+        <app-primary-button (buttonClick)="onLogout()">
             Logout
-        </button>
+        </app-primary-button>
     </div>
 </div>

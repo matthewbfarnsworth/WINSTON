@@ -1,19 +1,22 @@
-import { Component, computed, inject, signal, ɵgetUnknownElementStrictMode } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ApiService } from '../../services/api';
 import { User } from '../../models';
 import { Avatar } from '../../components/avatar/avatar';
+import { LoadingState } from '../../components/loading-state/loading-state';
+import { ListRow } from '../../components/list-row/list-row';
 
 export interface UserBalanceView {
   userId: string;
   name: string;
   avatarUrl?: string | null;
-  amount: string;
+  amount: number;
   userOwesMe: boolean;
 }
 
 @Component({
   selector: 'app-home',
-  imports: [Avatar],
+  imports: [Avatar, LoadingState, ListRow, CurrencyPipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -36,13 +39,14 @@ export class Home {
           userId: user.id!,
           name: user.name,
           avatarUrl: user.avatarUrl,
-          amount: Math.abs(rawBalance).toFixed(2),
+          amount: Math.abs(rawBalance),
           userOwesMe: rawBalance > 0,
           hasBalance: Math.abs(rawBalance) >= 0.01
         };
       })
         .filter(item => item.hasBalance);
   });
+
 
   constructor() {
     this.loadData();

@@ -1,34 +1,35 @@
 <div class="space-y-4">
-    <div>
-        <a routerLink="/trips/new" class="text-sm font-semibold text-cyan-600 hover:underline">
-            + New Trip
-        </a>
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Trips</h1>
+        <app-link-button routerLink="/trips/new">+ New Trip</app-link-button>
     </div>
 
     @if (isLoading()) {
-        <div class="text-xs text-slate-400">Loading trips...</div>
+        <app-loading-state />
     } @else {
         <div class="space-y-3">
             @for (trip of trips(); track trip.id) {
-                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <app-list-row>
                     <div class="flex items-center space-x-3">
-                        <app-avatar [name]="trip.owner?.name" [avatarUrl]="trip.owner?.avatarUrl" />
-                        <button (click)="toggleAccordion(trip.id!)" class="text-left font-bold text-slate-900 hover:text-cyan-600">
-                            {{ trip.name }}
+                        <app-avatar [name]="trip.owner?.name" [avatarUrl]="trip.owner?.avatarUrl" size="small" />
+                        <button (click)="toggleAccordion(trip.id!)" class="text-left font-bold text-slate-900 hover:text-cyan-600 flex items-center space-x-1 cursor-pointer transition-all duration-150 ease-in-out">
+                            <span>{{ trip.name }}</span>
+                            <span class="text-[10px] text-slate-400 inline-block transition-transform duration-150 ease-in-out"
+                                [class.rotate-180]="expandedTripId() === trip.id">
+                                ▼
+                            </span>
                         </button>
                     </div>
                     @if (isOwner(trip.ownerId)) {
-                        <a [routerLink]="['/trips/edit', trip.id]" class="text-xs font-semibold text-cyan-600 hover:underline">
-                            Edit Trip
-                        </a>
+                        <app-link-button [routerLink]="['/trips/edit', trip.id]">Edit Trip</app-link-button>
                     }
-                </div>
+                </app-list-row>
 
                 @if (expandedTripId() === trip.id) {
                     <div class="mt-2 ml-4 space-y-1">
                         @for (tripUser of trip.tripUsers; track tripUser.userId) {
                             <p class="text-sm text-slate-700">
-                                {{ tripUser.user?.name || 'User' }}: ${{ formatMoney(tripUser.split) }}
+                                {{ tripUser.user?.name || 'User' }}: {{ (tripUser.split || 0) | currency }}
                             </p>
                         }
                         @if (trip.receiptImageUrl) {
@@ -36,13 +37,11 @@
                                 <!-- TODO: Replace hardcoded URL when deploying to Azure-->
                                 <img [src]="'http://localhost:5211' + trip.receiptImageUrl"
                                     alt="Receipt"
-                                    class="max-h-48 rounded border border-slate-200 " />
+                                    class="max-h-48 rounded border border-slate-200" />
                             </div>
                         }
                     </div>
                 }
-            } @empty {
-                <p class="text-sm text-slate-400">No trips found.</p>
             }
         </div>
     }

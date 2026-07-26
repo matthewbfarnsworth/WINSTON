@@ -1,7 +1,9 @@
 @if (avatarUrl() && !hasImageError()) {
-    <img [src]="avatarUrl()" (error)="hasImageError.set(true)" class="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0" />
+    <img [src]="avatarUrl()"
+        (error)="hasImageError.set(true)"
+        [class]="size() === 'large' ? 'w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0 transition-all duration-150 ease-in-out' : 'w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0 transition-all duration-150 ease-in-out'" />
 } @else {
-    <span class="w-7 h-7 rounded-full bg-cyan-700 text-white text-xs font-bold flex items-center justify-center shrink-0">
+    <span [class]="size() === 'large' ? 'w-9 h-9 rounded-full bg-cyan-700 text-white text-xs font-bold flex items-center justify-center shrink-0 transition-all duration-150 ease-in-out' : 'w-6 h-6 rounded-full bg-cyan-700 text-white text-[10px] font-bold flex items-center justify-center shrink-0 transition-all duration-150 ease-in-out'">
         {{ initials() }}
     </span>
 }
