@@ -5,6 +5,8 @@ import { User } from '../../models';
 import { Avatar } from '../../components/avatar/avatar';
 import { LoadingState } from '../../components/loading-state/loading-state';
 import { ListRow } from '../../components/list-row/list-row';
+import { LinkButton } from '../../components/link-button/link-button';
+import { RouterLink } from "@angular/router";
 
 export interface UserBalanceView {
   userId: string;
@@ -16,7 +18,7 @@ export interface UserBalanceView {
 
 @Component({
   selector: 'app-home',
-  imports: [Avatar, LoadingState, ListRow, CurrencyPipe],
+  imports: [Avatar, LoadingState, ListRow, CurrencyPipe, LinkButton, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

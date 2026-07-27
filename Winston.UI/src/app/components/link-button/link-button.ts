@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Params, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-link-button',
@@ -9,6 +9,7 @@ import { RouterLink } from '@angular/router';
 })
 export class LinkButton {
   routerLink = input<string | any[] | null>(null);
+  queryParams = input<Params | null>(null);
   variant = input<'cyan' | 'muted'>('cyan');
 
   protected buttonClass = computed(() => {
@@ -18,4 +19,3 @@ export class LinkButton {
     return 'text-sm font-semibold text-cyan-600 hover:underline cursor-pointer transition-colors duration-150 ease-in-out';
   });
 }
-

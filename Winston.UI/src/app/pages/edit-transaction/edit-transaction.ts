@@ -63,9 +63,21 @@ export class EditTransaction {
         this.transactionId.set(id);
         this.loadTransaction(id);
       } else {
+        const queryParams = this.route.snapshot.queryParamMap;
+        const recipientParam = queryParams.get('recipientId');
+        const amountParam = queryParams.get('amount');
         const recipients = this.availableRecipients();
-        if (recipients.length > 0 && recipients[0].id) {
+        if (recipientParam && recipients.some(recipient => recipient.id === recipientParam)) {
+          this.recipientId.set(recipientParam);
+        }
+        else if (recipients.length > 0 && recipients[0].id) {
           this.recipientId.set(recipients[0].id);
+        }
+        if (amountParam) {
+          const parsedCost = parseFloat(amountParam);
+          if (!isNaN(parsedCost)) {
+            this.cost.set(parsedCost);
+          }
         }
         this.isLoading.set(false);
       }

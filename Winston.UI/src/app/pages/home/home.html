@@ -17,6 +17,13 @@
                             }
                         </p>
                     </div>
+                    @if (!item.userOwesMe) {
+                        <app-link-button
+                            routerLink="/transactions/new"
+                            [queryParams]="{ recipientId: item.userId, amount: item.amount }">
+                            Pay
+                        </app-link-button>
+                    }
                 </app-list-row>
             }
         }
