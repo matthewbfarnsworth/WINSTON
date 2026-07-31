@@ -59,11 +59,3 @@ appsettings.Development.json
 # Angular
 */.angular/cache
 node_modules/
-
-# DB
-*.db-shm
-*.db-wal
-Winston.API/winston.db
-
-# User-uploaded files
-Winston.API/wwwroot/uploads/

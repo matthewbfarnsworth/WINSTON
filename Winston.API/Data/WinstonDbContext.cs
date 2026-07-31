@@ -19,6 +19,11 @@ public class WinstonDbContext : DbContext
     {
         modelBuilder.Entity<TripUser>()
             .HasKey(tripUser => new { tripUser.TripId, tripUser.UserId });
+        modelBuilder.Entity<TripUser>()
+            .HasOne(tripUser => tripUser.User)
+            .WithMany()
+            .HasForeignKey(tripUser => tripUser.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Trip>()
             .Property(trip => trip.Total)
             .HasPrecision(18, 2);
@@ -38,11 +43,5 @@ public class WinstonDbContext : DbContext
             .WithMany()
             .HasForeignKey(transaction => transaction.RecipientId)
             .OnDelete(DeleteBehavior.Restrict);
-        //TODO remove dummy data
-        modelBuilder.Entity<User>().HasData(
-            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Name = "User1" },
-            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "User2" },
-            new User { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "User3" }
-        );
     }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Winston.Core;
 
 namespace Winston.API.Services;
@@ -13,13 +14,15 @@ public class CurrentUserService : ICurrentUserService
 
     public Guid GetCurrentUserId()
     {
-        var headerValue = _httpContextAccessor.HttpContext?.Request.Headers["X-User-Id"].ToString();
-        if (Guid.TryParse(headerValue, out var userId))
+        var user = _httpContextAccessor.HttpContext?.User;
+        var oidClaim = user?.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value
+            ?? user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (Guid.TryParse(oidClaim, out var userId))
         {
             return userId;
         }
-        //TODO remove dummy data
-        //User1
-        return Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        throw new UnauthorizedAccessException("User is not authenticated with Entra ID");
     }
 }

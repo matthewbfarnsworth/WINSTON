@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Winston.API.Data;
@@ -7,6 +8,7 @@ namespace Winston.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly WinstonDbContext _context;
@@ -23,7 +25,13 @@ public class UsersController : ControllerBase
     {
         var currentUserId = _currentUserService.GetCurrentUserId();
         var user = await _context.Users.FindAsync(currentUserId);
-        if (user == null) return NotFound();
+        if (user == null) {
+            var name = User.FindFirst("name")?.Value;
+            if (string.IsNullOrWhiteSpace(name)) return BadRequest("Name not found");
+            user = new User { Id = currentUserId, Name = name };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+        }
         return user;
     }
 
