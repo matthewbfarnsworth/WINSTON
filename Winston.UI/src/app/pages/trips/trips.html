@@ -34,8 +34,7 @@
                         }
                         @if (trip.receiptImageUrl) {
                             <div class="mt-2">
-                                <!-- TODO: Replace hardcoded URL when deploying to Azure-->
-                                <img [src]="'http://localhost:5211' + trip.receiptImageUrl"
+                                <img [src]="trip.receiptImageUrl"
                                     alt="Receipt"
                                     class="max-h-48 rounded border border-slate-200" />
                             </div>

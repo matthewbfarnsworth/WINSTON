@@ -11,7 +11,7 @@ public class AzureBlobStorageService : IStorageService
     public AzureBlobStorageService(IConfiguration config)
     {
         var connectionString = config["AzureBlobStorage:ConnectionString"];
-        var blobContainerName = config["AzureBlobStorage:ContainerName"] ?? "receipts";
+        var blobContainerName = "receipts";
         _containerClient = new BlobContainerClient(connectionString, blobContainerName);
         _containerClient.CreateIfNotExists(PublicAccessType.Blob);
     }

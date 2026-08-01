@@ -1,91 +1,75 @@
 import { HttpClient } from "@angular/common/http";
-import { inject, Service } from "@angular/core";
-import { Observable } from "rxjs";
-import { User, Trip, Transaction } from '../models';
+import { inject, Service, signal } from "@angular/core";
+import { Observable, tap } from "rxjs";
+import { User, Trip, Transaction } from "../models";
+import { environment } from "../../environments/environment";
 
 @Service()
 export class ApiService {
     private http = inject(HttpClient);
-    //TODO replace when deploying to azure
-    private apiUrl = 'http://localhost:5211/api';
-    //TODO remove mock auth
-    public currentUserId = localStorage.getItem('winston_user_id') || '';
-
-    //TODO remove mock auth
-    public login(userId: string) {
-        this.currentUserId = userId;
-        localStorage.setItem('winston_user_id', userId);
+    private apiUrl = environment.apiUrl;
+    public currentUser = signal<User | null>(null);
+    public get currentUserId(): string {
+        return this.currentUser()?.id || '';
     }
-
-    //TODO remove mock auth
-    public logout() {
-        this.currentUserId = '';
-        localStorage.removeItem('winston_user_id');
-    }
-
-    private getOptions() {
-        return {
-            headers: {
-                'X-User-Id': this.currentUserId
-            }
-        }
-    };
 
     getUsers(): Observable<User[]> {
-        return this.http.get<User[]>(`${this.apiUrl}/users`, this.getOptions());
+        return this.http.get<User[]>(`${this.apiUrl}/users`);
     }
 
     getCurrentUser(): Observable<User> {
-        return this.http.get<User>(`${this.apiUrl}/users/me`, this.getOptions());
+        return this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
+            tap(user => this.currentUser.set(user))
+        );
     }
 
     getBalances(): Observable<{ [userId: string]: number }> {
-        return this.http.get<{ [userId: string]: number }>(`${this.apiUrl}/users/balances`, this.getOptions());
+        return this.http.get<{ [userId: string]: number }>(`${this.apiUrl}/users/balances`);
     }
 
     createUser(user: User): Observable<User> {
-        return this.http.post<User>(`${this.apiUrl}/users`, user, this.getOptions());
+        return this.http.post<User>(`${this.apiUrl}/users`, user);
     }
 
     getTrips(): Observable<Trip[]> {
-        return this.http.get<Trip[]>(`${this.apiUrl}/trips`, this.getOptions());
+        return this.http.get<Trip[]>(`${this.apiUrl}/trips`);
     }
 
     getTrip(id: string): Observable<Trip> {
-        return this.http.get<Trip>(`${this.apiUrl}/trips/${id}`, this.getOptions());
+        return this.http.get<Trip>(`${this.apiUrl}/trips/${id}`);
     }
 
     createTrip(trip: Trip): Observable<Trip> {
-        return this.http.post<Trip>(`${this.apiUrl}/trips`, trip, this.getOptions());
+        return this.http.post<Trip>(`${this.apiUrl}/trips`, trip);
     }
 
     updateTrip(id: string, trip: Trip): Observable<Trip> {
-        return this.http.put<Trip>(`${this.apiUrl}/trips/${id}`, trip, this.getOptions());
+        return this.http.put<Trip>(`${this.apiUrl}/trips/${id}`, trip);
     }
 
     deleteTrip(id: string): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/trips/${id}`, this.getOptions());
+        return this.http.delete<void>(`${this.apiUrl}/trips/${id}`);
     }
 
     uploadReceipt(file: File): Observable<{ url: string }> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.post<{ url: string }>(`${this.apiUrl}/trips/upload`, formData, this.getOptions());
+        return this.http.post<{ url: string }>(`${this.apiUrl}/trips/upload`, formData);
     }
 
     getTransactions(): Observable<Transaction[]> {
-        return this.http.get<Transaction[]>(`${this.apiUrl}/transactions`, this.getOptions());
+        return this.http.get<Transaction[]>(`${this.apiUrl}/transactions`);
     }
 
     createTransaction(transaction: Transaction): Observable<Transaction> {
-        return this.http.post<Transaction>(`${this.apiUrl}/transactions`, transaction, this.getOptions());
+        return this.http.post<Transaction>(`${this.apiUrl}/transactions`, transaction);
     }
 
     updateTransaction(id: string, transaction: Transaction): Observable<Transaction> {
-        return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}`, transaction, this.getOptions());
+        return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}`, transaction);
     }
 
     toggleTransactionReceived(id: string): Observable<Transaction> {
-        return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}/toggle-received`, {}, this.getOptions());
+        return this.http.put<Transaction>(`${this.apiUrl}/transactions/${id}/toggle-received`, {});
     }
 }

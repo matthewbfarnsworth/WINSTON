@@ -6,8 +6,7 @@
 }
 @if (imageUrl()) {
   <div class="mt-2">
-    <!-- TODO: Replace hardcoded localhost URL for Azure-->
-    <img [src]="'http://localhost:5211' + imageUrl()"
+    <img [src]="imageUrl()"
       alt="Receipt preview"
       class="max-h-36 rounded border border-slate-200 mt-1" />
   </div>

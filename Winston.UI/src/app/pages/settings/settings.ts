@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { ApiService } from '../../services/api';
-import { Router } from '@angular/router';
 import { PrimaryButton } from '../../components/primary-button/primary-button';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-settings',
@@ -10,11 +9,11 @@ import { PrimaryButton } from '../../components/primary-button/primary-button';
   styleUrl: './settings.css',
 })
 export class Settings {
-  private apiService = inject(ApiService);
-  private router = inject(Router);
+  private msalService = inject(MsalService);
 
   protected onLogout() {
-    this.apiService.logout();
-    this.router.navigate(['/login']);
+    this.msalService.logoutRedirect({
+      postLogoutRedirectUri: 'http://localhost:4200/login'
+    })
   }
 }

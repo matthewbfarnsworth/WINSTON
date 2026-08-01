@@ -15,8 +15,6 @@ export class MainLayout {
   protected currentUser = signal<User | null>(null);
 
   constructor() {
-    if (this.apiService.currentUserId) {
-      this.apiService.getCurrentUser().subscribe(user => this.currentUser.set(user));
-    }
+    this.apiService.getCurrentUser().subscribe(user => this.currentUser.set(user));
   }
 }
