@@ -1,0 +1,52 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+    - azure-migration
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build Angular UI
+        run: |
+          cd Winston.UI
+          npm ci
+          npm run build -- --configuration production
+      
+      - name: Copy Angular Build to API wwwroot
+        run: |
+          mkdir -p Winston.API/wwwroot
+          cp -r Winston.UI/dist/winston/browser/* Winston.API/wwwroot/
+      
+      - name: Set Up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      
+      - name: Restore Dependencies
+        run: dotnet restore Winston.slnx
+
+      - name: Build API
+        run: dotnet build ./Winston.API/Winston.API.csproj --configuration Release --no-restore
+      
+      - name: Publish API
+        run: dotnet publish ./Winston.API/Winston.API.csproj --configuration Release --output ./publish --no-build
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
