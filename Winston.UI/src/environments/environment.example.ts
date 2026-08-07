@@ -7,7 +7,7 @@ export const environment = {
         ? 'http://localhost:5211/api'
         : '/api',
     entra: {
-        clientId: '<ENTRA_CLIENT_ID>',
+        clientId: 'ENTRA_CLIENT_ID',
         tenantId: 'consumers',
         redirectUri: isLocal
             ? 'http://localhost:4200'

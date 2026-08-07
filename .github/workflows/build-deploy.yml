@@ -14,10 +14,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set Up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Create Environment from Template
+        run: |
+          cp Winston.UI/src/environments/environment.example.ts Winston.UI/src/environments/environment.ts
+          sed -i 's/ENTRA_CLIENT_ID/${{ secrets.ENTRA_CLIENT_ID }}/g' Winston.UI/src/environments/environment.ts
 
       - name: Build Angular UI
         run: |
