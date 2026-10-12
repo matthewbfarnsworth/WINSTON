@@ -10,10 +10,11 @@ public class AzureBlobStorageService : IStorageService
 
     public AzureBlobStorageService(IConfiguration config)
     {
-        var connectionString = config["AzureBlobStorage:ConnectionString"];
-        var blobContainerName = "receipts";
+        var connectionString = config["AzureBlobStorage:ConnectionString"]
+            ?? throw new InvalidOperationException("Azure Blob Storage connection string is not configured");
+        var blobContainerName = config["AzureBlobStorage:ContainerName"]
+            ?? throw new InvalidOperationException("Azure Blob Storage container name is not configured");
         _containerClient = new BlobContainerClient(connectionString, blobContainerName);
-        _containerClient.CreateIfNotExists(PublicAccessType.Blob);
     }
 
     public async Task<string> UploadFileAsync(Stream fileStream, string fileName)

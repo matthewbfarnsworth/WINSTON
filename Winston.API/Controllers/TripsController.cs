@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web.Resource;
+using Winston.API.Authorization;
 using Winston.API.Data;
 using Winston.Core;
 
@@ -8,17 +10,16 @@ namespace Winston.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = AuthorizationPolicies.AllowedUser)]
+[RequiredScope("access_as_user")]
 public class TripsController : ControllerBase
 {
     private readonly WinstonDbContext _context;
-    private readonly IStorageService _storageService;
     private readonly ICurrentUserService _currentUserService;
 
-    public TripsController(WinstonDbContext context, IStorageService storageService, ICurrentUserService currentUserService)
+    public TripsController(WinstonDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _storageService = storageService;
         _currentUserService = currentUserService;
     }
 
@@ -72,6 +73,22 @@ public class TripsController : ControllerBase
         }
         if (trip.Id == Guid.Empty) trip.Id = Guid.NewGuid();
         trip.OwnerId = _currentUserService.GetCurrentUserId();
+        if (trip.TripUsers.Any(tripUser => tripUser.UserId == Guid.Empty))
+        {
+            return BadRequest("Trip users must have a valid user ID");
+        }
+        if (trip.TripUsers.Select(tripUser => tripUser.UserId).Distinct().Count() != trip.TripUsers.Count)
+        {
+            return BadRequest("Trip users must be unique");
+        }
+        if (!trip.TripUsers.Any(tripUser => tripUser.UserId == trip.OwnerId))
+        {
+            trip.TripUsers.Add(new TripUser { UserId = trip.OwnerId });
+        }
+        foreach (var tripUser in trip.TripUsers)
+        {
+            tripUser.TripId = trip.Id;
+        }
         _context.Trips.Add(trip);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetTrip), new { id = trip.Id }, trip);
@@ -94,7 +111,24 @@ public class TripsController : ControllerBase
         {
             return BadRequest("Invalid trip data");
         }
-        _context.Entry(existingTrip).CurrentValues.SetValues(updatedTrip);
+        if (updatedTrip.TripUsers.Any(tripUser => tripUser.UserId == Guid.Empty))
+        {
+            return BadRequest("Trip users must have a valid user ID");
+        }
+        if (updatedTrip.TripUsers.Select(tripUser => tripUser.UserId).Distinct().Count() != updatedTrip.TripUsers.Count)
+        {
+            return BadRequest("Trip users must be unique");
+        }
+        if (!updatedTrip.TripUsers.Any(tripUser => tripUser.UserId == existingTrip.OwnerId))
+        {
+            return BadRequest("The trip owner must be included in the trip users");
+        }
+
+        existingTrip.Name = updatedTrip.Name;
+        existingTrip.Date = updatedTrip.Date;
+        existingTrip.Total = updatedTrip.Total;
+        existingTrip.Notes = updatedTrip.Notes;
+        existingTrip.ReceiptImageUrl = updatedTrip.ReceiptImageUrl;
         _context.TripUsers.RemoveRange(existingTrip.TripUsers);
         foreach (var newUser in updatedTrip.TripUsers)
         {
@@ -133,7 +167,9 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> UploadReceipt(IFormFile file)
+    public async Task<IActionResult> UploadReceipt(
+        IFormFile file,
+        [FromServices] IStorageService storageService)
     {
         if (file == null || file.Length == 0)
         {
@@ -141,7 +177,7 @@ public class TripsController : ControllerBase
         }
         using (var stream = file.OpenReadStream())
         {
-            var fileUrl = await _storageService.UploadFileAsync(stream, file.FileName);
+            var fileUrl = await storageService.UploadFileAsync(stream, file.FileName);
             return Ok(new { url = fileUrl });
         }
     }

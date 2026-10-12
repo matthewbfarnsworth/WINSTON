@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Service, signal } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { Observable, of, shareReplay, tap } from "rxjs";
 import { User, Trip, Transaction } from "../models";
 import { environment } from "../../environments/environment";
 
@@ -8,6 +8,7 @@ import { environment } from "../../environments/environment";
 export class ApiService {
     private http = inject(HttpClient);
     private apiUrl = environment.apiUrl;
+    private currentUserRequest?: Observable<User>;
     public currentUser = signal<User | null>(null);
     public get currentUserId(): string {
         return this.currentUser()?.id || '';
@@ -18,17 +19,18 @@ export class ApiService {
     }
 
     getCurrentUser(): Observable<User> {
-        return this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
-            tap(user => this.currentUser.set(user))
+        const currentUser = this.currentUser();
+        if (currentUser) return of(currentUser);
+
+        this.currentUserRequest ??= this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
+            tap(user => this.currentUser.set(user)),
+            shareReplay({ bufferSize: 1, refCount: false })
         );
+        return this.currentUserRequest;
     }
 
     getBalances(): Observable<{ [userId: string]: number }> {
         return this.http.get<{ [userId: string]: number }>(`${this.apiUrl}/users/balances`);
-    }
-
-    createUser(user: User): Observable<User> {
-        return this.http.post<User>(`${this.apiUrl}/users`, user);
     }
 
     getTrips(): Observable<Trip[]> {

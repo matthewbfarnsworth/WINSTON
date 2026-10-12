@@ -1,9 +1,13 @@
 import { inject } from "@angular/core";
 import { CanActivateFn } from "@angular/router";
 import { MsalService } from "@azure/msal-angular";
+import { firstValueFrom } from "rxjs";
+import { environment } from "../../environments/environment";
+import { ApiService } from "../services/api";
 
 export const authGuard: CanActivateFn = async (route, state) => {
   const msalService = inject(MsalService);
+  const apiService = inject(ApiService);
   const instance = msalService.instance;
 
   await instance.initialize();
@@ -20,11 +24,12 @@ export const authGuard: CanActivateFn = async (route, state) => {
   }
 
   if (activeAccount) {
+    await firstValueFrom(apiService.getCurrentUser());
     return true;
   }
 
   await instance.loginRedirect({
-    scopes: ['user.read', 'openid', 'profile']
+    scopes: [environment.entra.apiScope, 'openid', 'profile']
   });
   return false;
 };

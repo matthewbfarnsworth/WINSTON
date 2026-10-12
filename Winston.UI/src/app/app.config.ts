@@ -1,8 +1,8 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { EventType, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { EventMessage, InteractionType, IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
-import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalGuardConfiguration, MsalInterceptor, MsalInterceptorConfiguration, MsalService } from '@azure/msal-angular';
+import { InteractionType, IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
+import { MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalInterceptor, MsalInterceptorConfiguration, MsalService } from '@azure/msal-angular';
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         interactionType: InteractionType.Redirect,
         protectedResourceMap: new Map([
-          [`${environment.apiUrl}/*`, [`api://${environment.entra.clientId}/access_as_user`]]
+          [`${environment.apiUrl}/*`, [environment.entra.apiScope]]
         ])
       } as MsalInterceptorConfiguration
     },

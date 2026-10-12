@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Winston.API.Authorization;
 using Winston.API.Data;
 using Winston.API.Services;
 using Winston.Core;
@@ -14,11 +16,23 @@ builder.Services.AddDbContext<WinstonDbContext>(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
+builder.Services.Configure<AccessControlOptions>(
+    builder.Configuration.GetSection(AccessControlOptions.SectionName));
+builder.Services.AddSingleton<IAuthorizationHandler, AllowedUserAuthorizationHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthorizationPolicies.AllowedUser, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(new AllowedUserRequirement());
+    });
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -52,6 +66,8 @@ app.UseHttpsRedirection();
 app.UseDefaultFiles();
 
 app.UseStaticFiles();
+
+app.UseCors();
 
 app.UseAuthentication();
 

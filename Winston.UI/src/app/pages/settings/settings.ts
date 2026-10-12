@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { PrimaryButton } from '../../components/primary-button/primary-button';
 import { MsalService } from '@azure/msal-angular';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -13,7 +14,7 @@ export class Settings {
 
   protected onLogout() {
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200/login'
+      postLogoutRedirectUri: environment.entra.redirectUri
     })
   }
 }

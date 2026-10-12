@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web.Resource;
+using Winston.API.Authorization;
 using Winston.API.Data;
 using Winston.Core;
 
@@ -8,7 +10,8 @@ namespace Winston.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = AuthorizationPolicies.AllowedUser)]
+[RequiredScope("access_as_user")]
 public class TransactionsController : ControllerBase
 {
     private readonly WinstonDbContext _context;
@@ -46,7 +49,7 @@ public class TransactionsController : ControllerBase
     public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
     {
         if (transaction.Id == Guid.Empty) transaction.Id = Guid.NewGuid();
-        if (transaction.SenderId == Guid.Empty) transaction.SenderId = _currentUserService.GetCurrentUserId();
+        transaction.SenderId = _currentUserService.GetCurrentUserId();
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);
@@ -58,7 +61,15 @@ public class TransactionsController : ControllerBase
         if (id != updatedTransaction.Id) return BadRequest("ID mismatch");
         var existingTransaction = await _context.Transactions.FindAsync(id);
         if (existingTransaction == null) return NotFound();
-        _context.Entry(existingTransaction).CurrentValues.SetValues(updatedTransaction);
+        if (existingTransaction.SenderId != _currentUserService.GetCurrentUserId())
+        {
+            return Forbid();
+        }
+
+        existingTransaction.RecipientId = updatedTransaction.RecipientId;
+        existingTransaction.Date = updatedTransaction.Date;
+        existingTransaction.Cost = updatedTransaction.Cost;
+        existingTransaction.Notes = updatedTransaction.Notes;
         await _context.SaveChangesAsync();
         var reloadedTransaction = await _context.Transactions
             .Include(trip => trip.Sender)
@@ -72,6 +83,11 @@ public class TransactionsController : ControllerBase
     {
         var transaction = await _context.Transactions.FindAsync(id);
         if (transaction == null) return NotFound();
+        if (transaction.RecipientId != _currentUserService.GetCurrentUserId())
+        {
+            return Forbid();
+        }
+
         transaction.RecipientDidNotReceive = !transaction.RecipientDidNotReceive;
         await _context.SaveChangesAsync();
         return Ok(transaction);
@@ -82,6 +98,11 @@ public class TransactionsController : ControllerBase
     {
         var transaction = await _context.Transactions.FindAsync(id);
         if (transaction == null) return NotFound();
+        if (transaction.SenderId != _currentUserService.GetCurrentUserId())
+        {
+            return Forbid();
+        }
+
         _context.Transactions.Remove(transaction);
         await _context.SaveChangesAsync();
         return NoContent();
