@@ -23,29 +23,30 @@ jobs:
         run: |
           cp Winston.UI/src/environments/environment.example.ts Winston.UI/src/environments/environment.ts
           sed -i 's/ENTRA_CLIENT_ID/${{ secrets.ENTRA_CLIENT_ID }}/g' Winston.UI/src/environments/environment.ts
+          sed -i 's/ENTRA_API_CLIENT_ID/${{ secrets.ENTRA_API_CLIENT_ID }}/g' Winston.UI/src/environments/environment.ts
 
       - name: Build Angular UI
         run: |
           cd Winston.UI
           npm ci
           npm run build -- --configuration production
-      
+
       - name: Copy Angular Build to API wwwroot
         run: |
           mkdir -p Winston.API/wwwroot
           cp -r Winston.UI/dist/winston/browser/* Winston.API/wwwroot/
-      
+
       - name: Set Up .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
-      
+
       - name: Restore Dependencies
         run: dotnet restore Winston.slnx
 
       - name: Build API
         run: dotnet build ./Winston.API/Winston.API.csproj --configuration Release --no-restore
-      
+
       - name: Publish API
         run: dotnet publish ./Winston.API/Winston.API.csproj --configuration Release --output ./publish --no-build
 
