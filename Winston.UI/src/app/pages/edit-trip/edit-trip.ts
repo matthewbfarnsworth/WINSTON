@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { map, switchMap } from 'rxjs';
 import { ApiService } from '../../services/api';
 import { Trip, TripUser, User } from '../../models';
 import { CurrencyInput } from '../../components/currency-input/currency-input';
@@ -80,18 +81,38 @@ export class EditTrip implements OnDestroy {
   }
 
   private initForm() {
-    this.apiService.getUsers().subscribe(users => {
-      this.allUsers.set(users);
-      const id = this.route.snapshot.paramMap.get('id');
-      if (id) {
-        this.isEditMode.set(true);
-        this.tripId.set(id);
-        this.loadTrip(id);
-      } else {
-        const currentUserId = this.apiService.currentUserId;
-        this.tripUsers.set([
-          { userId: currentUserId, personalCost: 0.00 }
+    this.apiService.getCurrentUser().pipe(
+      switchMap(currentUser => this.apiService.getUsers().pipe(
+        map(users => ({ currentUser, users }))
+      ))
+    ).subscribe({
+      next: ({ currentUser, users }) => {
+        if (!currentUser.id) {
+          console.error('Current user is missing an ID');
+          this.isLoading.set(false);
+          return;
+        }
+
+        const currentUserId = currentUser.id;
+        this.allUsers.set([
+          currentUser,
+          ...users.filter(user => user.id?.toLowerCase() !== currentUserId.toLowerCase())
         ]);
+
+        const id = this.route.snapshot.paramMap.get('id');
+        if (id) {
+          this.isEditMode.set(true);
+          this.tripId.set(id);
+          this.loadTrip(id);
+        } else {
+          this.tripUsers.set([
+            { userId: currentUserId, personalCost: 0.00 }
+          ]);
+          this.isLoading.set(false);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to initialize trip form', err);
         this.isLoading.set(false);
       }
     });
