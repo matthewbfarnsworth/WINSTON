@@ -55,12 +55,24 @@ export class EditTrip implements OnDestroy {
   protected canAddMoreUsers = computed(() => {
     return this.tripUsers().length < this.allUsers().length;
   });
+  protected totalPersonalCost = computed(() => {
+    return this.tripUsers().reduce(
+      (sum, tripUser) => sum + (tripUser.personalCost || 0),
+      0
+    );
+  });
+  protected personalCostsExceedTotal = computed(() => {
+    const personalCostCents = Math.round(this.totalPersonalCost() * 100);
+    const totalCents = Math.round(this.total() * 100);
+    return personalCostCents > totalCents;
+  });
   protected isFormValid = computed(() => {
     const validName = this.name().trim().length > 0;
     const validDate = !!this.date();
     const validTotal = this.total() > 0;
     const hasUsers = this.tripUsers().length > 0;
-    return validName && validDate && validTotal && hasUsers;
+    const validPersonalCosts = !this.personalCostsExceedTotal();
+    return validName && validDate && validTotal && hasUsers && validPersonalCosts;
   });
 
   constructor() {
@@ -200,6 +212,8 @@ export class EditTrip implements OnDestroy {
   }
 
   protected saveTrip() {
+    if (!this.isFormValid()) return;
+
     const tripData: Trip = {
       id: this.tripId() || undefined,
       ownerId: this.apiService.currentUserId,

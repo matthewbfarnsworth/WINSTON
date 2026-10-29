@@ -79,6 +79,10 @@ public class TripsController : ControllerBase
         {
             return BadRequest("Invalid trip data");
         }
+        if (PersonalCostsExceedTotal(trip))
+        {
+            return BadRequest("The sum of personal costs cannot exceed the trip total");
+        }
         if (trip.Id == Guid.Empty) trip.Id = Guid.NewGuid();
         trip.OwnerId = _currentUserService.GetCurrentUserId();
         if (trip.TripUsers.Any(tripUser => tripUser.UserId == Guid.Empty))
@@ -121,6 +125,10 @@ public class TripsController : ControllerBase
         if (string.IsNullOrWhiteSpace(updatedTrip.Name) || updatedTrip.Total <= 0)
         {
             return BadRequest("Invalid trip data");
+        }
+        if (PersonalCostsExceedTotal(updatedTrip))
+        {
+            return BadRequest("The sum of personal costs cannot exceed the trip total");
         }
         if (updatedTrip.TripUsers.Any(tripUser => tripUser.UserId == Guid.Empty))
         {
@@ -236,5 +244,10 @@ public class TripsController : ControllerBase
             file.ContentType,
             HttpContext.RequestAborted);
         return Ok(new { blobName });
+    }
+
+    private static bool PersonalCostsExceedTotal(Trip trip)
+    {
+        return trip.TripUsers.Sum(tripUser => tripUser.PersonalCost) > trip.Total;
     }
 }
