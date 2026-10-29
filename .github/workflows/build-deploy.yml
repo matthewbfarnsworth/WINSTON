@@ -82,6 +82,13 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Mask deployment hostname
+        env:
+          AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+        run: |
+          : "${AZURE_WEBAPP_NAME:?Set AZURE_WEBAPP_NAME on the production environment}"
+          echo "::add-mask::${AZURE_WEBAPP_NAME}"
+
       - name: Deploy Azure Web App
         uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3
         with:
