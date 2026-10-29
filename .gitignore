@@ -71,6 +71,10 @@ Winston.API/wwwroot/
 *.pfx
 *.publishsettings
 publish/
+Winston.UI/playwright-report/
+Winston.UI/test-results/
+**/coverage/
+**/TestResults/
 
 # Terraform
 **/.terraform/*

@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Angular and Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: Winston.UI/package-lock.json
+
+      - name: Create test environment
+        run: cp Winston.UI/src/environments/environment.example.ts Winston.UI/src/environments/environment.ts
+
+      - name: Install dependencies
+        working-directory: Winston.UI
+        run: npm ci
+
+      - name: Audit dependencies
+        working-directory: Winston.UI
+        run: npm audit --audit-level=moderate
+
+      - name: Run Angular unit tests
+        working-directory: Winston.UI
+        run: npm run test:unit
+
+      - name: Build Angular UI
+        working-directory: Winston.UI
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: Winston.UI
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: Winston.UI
+        run: npm run test:e2e
+
+  backend:
+    name: .NET unit and integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run .NET tests
+        run: dotnet test Winston.slnx --configuration Release
+
+  infrastructure:
+    name: Terraform validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.6
+
+      - name: Check formatting
+        run: terraform -chdir=Winston.Infra fmt -check -recursive
+
+      - name: Initialize Terraform
+        run: terraform -chdir=Winston.Infra init -backend=false
+
+      - name: Validate Terraform
+        run: terraform -chdir=Winston.Infra validate

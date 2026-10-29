@@ -162,6 +162,37 @@ share = (trip total - sum of personal costs) / number of people + personal cost
 
 Rounding differences are assigned to the trip owner so all shares add up exactly to the trip total. The application prevents personal costs from exceeding the trip total.
 
+## Tests
+
+WINSTON uses three testing layers:
+
+- xUnit unit tests cover the expense and balance calculations;
+- ASP.NET Core integration tests exercise authenticated API requests against an in-memory SQLite database and fake private storage;
+- Angular/Vitest tests cover services, guards, components, and page behavior;
+- three Playwright journeys cover the highest-value browser flows with deterministic fake authentication and API responses.
+
+Run the .NET tests from the repository root:
+
+```bash
+dotnet test Winston.slnx --configuration Release
+```
+
+Run Angular unit tests:
+
+```bash
+npm run test:unit --prefix Winston.UI
+```
+
+Install Playwright's browser once, then run E2E tests:
+
+```bash
+cd Winston.UI
+npx playwright install chromium
+npm run test:e2e
+```
+
+GitHub Actions runs all test layers, a production frontend build, dependency auditing, and Terraform validation before the tested `master` commit is eligible for Azure deployment.
+
 ## Tear down Azure resources
 
 Review the destroy plan before approving it:

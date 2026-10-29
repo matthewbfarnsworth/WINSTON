@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="Winston.API/Winston.API.csproj" />
+  <Project Path="Winston.API.Tests/Winston.API.Tests.csproj" />
   <Project Path="Winston.Core/Winston.Core.csproj" />
+  <Project Path="Winston.Core.Tests/Winston.Core.Tests.csproj" />
 </Solution>
