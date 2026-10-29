@@ -48,7 +48,7 @@ resource "azapi_resource" "sql_database" {
 
   body = {
     sku = {
-      name     = "GP_S_Gen5_2"
+      name     = "GP_S_Gen5"
       tier     = "GeneralPurpose"
       family   = "Gen5"
       capacity = 2
@@ -81,7 +81,7 @@ resource "azurerm_storage_account" "winston" {
   account_replication_type        = "LRS"
   account_kind                    = "StorageV2"
   access_tier                     = "Hot"
-  allow_nested_items_to_be_public = true
+  allow_nested_items_to_be_public = false
   min_tls_version                 = "TLS1_2"
   tags                            = local.common_tags
 }
@@ -89,7 +89,7 @@ resource "azurerm_storage_account" "winston" {
 resource "azurerm_storage_container" "receipts" {
   name                  = var.receipt_container_name
   storage_account_id    = azurerm_storage_account.winston.id
-  container_access_type = "blob"
+  container_access_type = "private"
 }
 
 resource "azurerm_linux_web_app" "winston" {
@@ -101,24 +101,31 @@ resource "azurerm_linux_web_app" "winston" {
   https_only                                     = true
   public_network_access_enabled                  = true
   ftp_publish_basic_authentication_enabled       = false
-  webdeploy_publish_basic_authentication_enabled = true
+  webdeploy_publish_basic_authentication_enabled = false
 
   app_settings = merge({
-    ASPNETCORE_ENVIRONMENT             = "Production"
-    WEBSITE_RUN_FROM_PACKAGE           = "1"
-    WEBSITE_WEBDEPLOY_USE_SCM          = "true"
-    AzureAd__Instance                  = "https://login.microsoftonline.com/"
-    AzureAd__TenantId                  = "consumers"
-    AzureAd__ClientId                  = azuread_application_registration.api.client_id
-    AzureAd__Audience                  = azuread_application_registration.api.client_id
-    AzureBlobStorage__ConnectionString = azurerm_storage_account.winston.primary_connection_string
-    AzureBlobStorage__ContainerName    = azurerm_storage_container.receipts.name
+    ASPNETCORE_ENVIRONMENT            = "Production"
+    WEBSITE_RUN_FROM_PACKAGE          = "1"
+    WEBSITE_WEBDEPLOY_USE_SCM         = "true"
+    AzureAd__Instance                 = "https://login.microsoftonline.com/"
+    AzureAd__TenantId                 = "consumers"
+    AzureAd__ClientId                 = azuread_application_registration.api.client_id
+    AzureAd__Audience                 = azuread_application_registration.api.client_id
+    AccessControl__AccessRequestEmail = trimspace(var.access_request_email)
+    ReceiptStorage__ConnectionString  = azurerm_storage_account.winston.primary_connection_string
+    ReceiptStorage__ContainerName     = azurerm_storage_container.receipts.name
   }, local.allowed_user_app_settings)
 
   connection_string {
     name  = "DefaultConnection"
     type  = "SQLAzure"
     value = local.sql_connection_string
+  }
+
+  logs {
+    application_logs {
+      file_system_level = "Warning"
+    }
   }
 
   site_config {

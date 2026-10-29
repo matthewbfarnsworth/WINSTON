@@ -1,0 +1,35 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+  <header class="bg-white border-b border-slate-200 px-4 h-14 flex items-center">
+    <span class="font-bold text-slate-900">Winston</span>
+  </header>
+
+  <main class="grow w-full max-w-md mx-auto p-4 flex items-center">
+    <div class="w-full bg-white border border-slate-200 rounded p-4 shadow-sm space-y-4">
+      <div class="space-y-1">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Access denied</h1>
+        <p class="text-sm text-slate-600">
+          This Microsoft account does not have access to Winston.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        @if (requestUrl()) {
+          <a
+            [href]="requestUrl()"
+            class="block w-full py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-center font-semibold text-sm rounded shadow-sm transition-colors duration-150 ease-in-out">
+            Request access
+          </a>
+        } @else {
+          <p class="text-xs text-slate-500">Ask the owner to add your account.</p>
+        }
+
+        <button
+          type="button"
+          (click)="onLogout()"
+          class="w-full text-sm text-slate-500 hover:text-slate-800 cursor-pointer transition-colors duration-150 ease-in-out">
+          Sign out
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

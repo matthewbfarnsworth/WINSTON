@@ -31,10 +31,6 @@ resource "azuread_application_permission_scope" "access_as_user" {
   depends_on = [azuread_application_identifier_uri.api]
 }
 
-resource "azuread_service_principal" "api" {
-  client_id = azuread_application_registration.api.client_id
-}
-
 resource "azuread_application_registration" "spa" {
   display_name                   = "${local.name_prefix}-spa"
   description                    = "WINSTON Angular single-page application"
@@ -45,10 +41,6 @@ resource "azuread_application_registration" "spa" {
 resource "azuread_application_owner" "spa" {
   application_id  = azuread_application_registration.spa.id
   owner_object_id = data.azuread_client_config.current.object_id
-}
-
-resource "azuread_service_principal" "spa" {
-  client_id = azuread_application_registration.spa.client_id
 }
 
 resource "azuread_application_redirect_uris" "spa" {
@@ -67,4 +59,36 @@ resource "azuread_application_api_access" "spa_to_api" {
   scope_ids      = [random_uuid.api_scope.result]
 
   depends_on = [azuread_application_permission_scope.access_as_user]
+}
+
+resource "azuread_application_registration" "github_deploy" {
+  display_name     = "${local.name_prefix}-github-deploy"
+  description      = "GitHub Actions deployment identity for WINSTON"
+  sign_in_audience = "AzureADMyOrg"
+}
+
+resource "azuread_application_owner" "github_deploy" {
+  application_id  = azuread_application_registration.github_deploy.id
+  owner_object_id = data.azuread_client_config.current.object_id
+}
+
+resource "azuread_service_principal" "github_deploy" {
+  client_id = azuread_application_registration.github_deploy.client_id
+}
+
+resource "azuread_application_federated_identity_credential" "github_deploy" {
+  application_id = azuread_application_registration.github_deploy.id
+  display_name   = "github-${var.github_environment}"
+  description    = "Trust ${var.github_repository} GitHub Actions in the ${var.github_environment} environment"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:${var.github_repository}:environment:${var.github_environment}"
+}
+
+resource "azurerm_role_assignment" "github_web_app_deploy" {
+  scope                            = azurerm_linux_web_app.winston.id
+  role_definition_name             = "Website Contributor"
+  principal_id                     = azuread_service_principal.github_deploy.object_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
 }

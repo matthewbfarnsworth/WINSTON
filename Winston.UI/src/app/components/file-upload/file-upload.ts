@@ -1,4 +1,4 @@
-import { Component, input, model, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-file-upload',
@@ -7,7 +7,7 @@ import { Component, input, model, output } from '@angular/core';
   styleUrl: './file-upload.css',
 })
 export class FileUpload {
-  imageUrl = model<string>('');
+  imageUrl = input<string>('');
   isUploading = input<boolean>(false);
   fileSelected = output<File>();
 

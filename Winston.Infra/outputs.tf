@@ -28,6 +28,21 @@ output "entra_api_scope" {
   value       = "api://${azuread_application_registration.api.client_id}/access_as_user"
 }
 
+output "github_actions_client_id" {
+  description = "Value for the AZURE_CLIENT_ID GitHub Actions variable."
+  value       = azuread_application_registration.github_deploy.client_id
+}
+
+output "azure_subscription_id" {
+  description = "Value for the AZURE_SUBSCRIPTION_ID GitHub Actions variable."
+  value       = var.subscription_id
+}
+
+output "azure_tenant_id" {
+  description = "Value for the AZURE_TENANT_ID GitHub Actions variable."
+  value       = var.tenant_id
+}
+
 output "storage_account_name" {
   description = "Storage account containing receipt images."
   value       = azurerm_storage_account.winston.name

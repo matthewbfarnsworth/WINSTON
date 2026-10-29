@@ -3,6 +3,10 @@ import { authGuard } from "./guards/auth-guard";
 
 export const routes: Routes = [
     {
+        path: 'access-denied',
+        loadComponent: () => import('./pages/access-denied/access-denied').then(module => module.AccessDenied)
+    },
+    {
         path: '',
         loadComponent: () => import('./layouts/main-layout/main-layout').then(module => module.MainLayout),
         canActivate: [authGuard],

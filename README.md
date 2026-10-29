@@ -17,6 +17,31 @@ graph TD
     API --> Blob[("Azure Blob Storage")]
 ```
 
+# Setup
+
+Install Node.js 22, the .NET 10 SDK, Terraform 1.9 or newer, and the Azure CLI. Then sign in to Azure and provision the infrastructure:
+
+```bash
+az login
+cd Winston.Infra
+cp terraform.tfvars.example terraform.tfvars
+# Fill in terraform.tfvars with your subscription, tenant, contact email, and allowed account OIDs.
+terraform init
+terraform plan
+terraform apply
+```
+
+Terraform creates one environment per state; the default state provisions `dev`. Use a separate Terraform state before adding another environment such as `prod`.
+
+Copy `Winston.UI/src/environments/environment.example.ts` to `environment.ts` and replace its two placeholders with the `entra_spa_client_id` and `entra_api_client_id` Terraform outputs. For automated deployment, create a GitHub environment named `production`; configure `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, and `AZURE_WEBAPP_NAME` as variables; configure `ENTRA_CLIENT_ID` and `ENTRA_API_CLIENT_ID` as secrets; then run the **Build and Deploy to Azure** workflow.
+
+Add another Microsoft account later with:
+
+```bash
+cd Winston.Infra
+./add-allowed-user.sh <account-oid> [<additional-account-oid> ...]
+```
+
 # Schema
 
 ### `User`

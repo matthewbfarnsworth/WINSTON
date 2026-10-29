@@ -7,10 +7,11 @@ import { LoadingState } from '../../components/loading-state/loading-state';
 import { ListRow } from '../../components/list-row/list-row';
 import { LinkButton } from '../../components/link-button/link-button';
 import { SmallButton } from '../../components/small-button/small-button';
+import { ReceiptImage } from '../../components/receipt-image/receipt-image';
 
 @Component({
   selector: 'app-trips',
-  imports: [Avatar, LoadingState, ListRow, LinkButton, CurrencyPipe],
+  imports: [Avatar, LoadingState, ListRow, LinkButton, ReceiptImage, CurrencyPipe],
   templateUrl: './trips.html',
   styleUrl: './trips.css',
 })

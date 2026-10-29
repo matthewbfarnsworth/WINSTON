@@ -1,5 +1,6 @@
 import { inject } from "@angular/core";
-import { CanActivateFn } from "@angular/router";
+import { HttpErrorResponse } from "@angular/common/http";
+import { CanActivateFn, Router } from "@angular/router";
 import { MsalService } from "@azure/msal-angular";
 import { firstValueFrom } from "rxjs";
 import { environment } from "../../environments/environment";
@@ -8,6 +9,7 @@ import { ApiService } from "../services/api";
 export const authGuard: CanActivateFn = async (route, state) => {
   const msalService = inject(MsalService);
   const apiService = inject(ApiService);
+  const router = inject(Router);
   const instance = msalService.instance;
 
   await instance.initialize();
@@ -24,8 +26,16 @@ export const authGuard: CanActivateFn = async (route, state) => {
   }
 
   if (activeAccount) {
-    await firstValueFrom(apiService.getCurrentUser());
-    return true;
+    try {
+      await firstValueFrom(apiService.getCurrentUser());
+      return true;
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 403) {
+        return router.createUrlTree(['/access-denied']);
+      }
+
+      throw error;
+    }
   }
 
   await instance.loginRedirect({

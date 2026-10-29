@@ -4,6 +4,11 @@ export interface User {
     avatarUrl?: string | null;
 }
 
+export interface AccessRequestInfo {
+    requestEmail: string;
+    objectId: string;
+}
+
 export interface TripUser {
     userId: string;
     user?: User | null;

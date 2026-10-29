@@ -1,0 +1,9 @@
+@if (imageUrl()) {
+  <img [src]="imageUrl()"
+    [alt]="alt()"
+    class="max-h-48 rounded border border-slate-200" />
+} @else if (loadFailed()) {
+  <p class="text-xs text-red-600">Receipt could not be loaded.</p>
+} @else {
+  <p class="text-xs text-slate-500">Loading receipt...</p>
+}

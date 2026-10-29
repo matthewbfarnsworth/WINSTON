@@ -14,6 +14,14 @@ namespace Winston.API.Controllers;
 [RequiredScope("access_as_user")]
 public class TripsController : ControllerBase
 {
+    private const long MaxReceiptSize = 5 * 1024 * 1024;
+    private static readonly HashSet<string> AllowedReceiptContentTypes =
+    [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
     private readonly WinstonDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -95,7 +103,10 @@ public class TripsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTrip(Guid id, Trip updatedTrip)
+    public async Task<IActionResult> UpdateTrip(
+        Guid id,
+        Trip updatedTrip,
+        [FromServices] IStorageService storageService)
     {
         if (id != updatedTrip.Id) return BadRequest("ID mismatch");
         var existingTrip = await _context.Trips
@@ -124,6 +135,7 @@ public class TripsController : ControllerBase
             return BadRequest("The trip owner must be included in the trip users");
         }
 
+        var previousReceiptBlobName = existingTrip.ReceiptImageUrl;
         existingTrip.Name = updatedTrip.Name;
         existingTrip.Date = updatedTrip.Date;
         existingTrip.Total = updatedTrip.Total;
@@ -136,6 +148,13 @@ public class TripsController : ControllerBase
             _context.TripUsers.Add(newUser);
         }
         await _context.SaveChangesAsync();
+        if (!string.IsNullOrWhiteSpace(previousReceiptBlobName)
+            && !string.Equals(previousReceiptBlobName, existingTrip.ReceiptImageUrl, StringComparison.Ordinal))
+        {
+            await storageService.DeleteFileIfExistsAsync(
+                previousReceiptBlobName,
+                HttpContext.RequestAborted);
+        }
         var reloadedTrip = await _context.Trips
             .Include(trip => trip.Owner)
             .Include(trip => trip.TripUsers)
@@ -153,7 +172,9 @@ public class TripsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTrip(Guid id)
+    public async Task<IActionResult> DeleteTrip(
+        Guid id,
+        [FromServices] IStorageService storageService)
     {
         var trip = await _context.Trips.FindAsync(id);
         if (trip == null) return NotFound();
@@ -163,7 +184,32 @@ public class TripsController : ControllerBase
         }
         _context.Trips.Remove(trip);
         await _context.SaveChangesAsync();
+        if (!string.IsNullOrWhiteSpace(trip.ReceiptImageUrl))
+        {
+            await storageService.DeleteFileIfExistsAsync(
+                trip.ReceiptImageUrl,
+                HttpContext.RequestAborted);
+        }
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/receipt")]
+    public async Task<IActionResult> GetReceipt(
+        Guid id,
+        [FromServices] IStorageService storageService)
+    {
+        var blobName = await _context.Trips
+            .Where(trip => trip.Id == id)
+            .Select(trip => trip.ReceiptImageUrl)
+            .SingleOrDefaultAsync();
+        if (string.IsNullOrWhiteSpace(blobName)) return NotFound();
+
+        var storedFile = await storageService.DownloadFileAsync(
+            blobName,
+            HttpContext.RequestAborted);
+        return storedFile is null
+            ? NotFound()
+            : File(storedFile.Content, storedFile.ContentType);
     }
 
     [HttpPost("upload")]
@@ -175,10 +221,20 @@ public class TripsController : ControllerBase
         {
             return BadRequest("No file uploaded");
         }
-        using (var stream = file.OpenReadStream())
+        if (file.Length > MaxReceiptSize)
         {
-            var fileUrl = await storageService.UploadFileAsync(stream, file.FileName);
-            return Ok(new { url = fileUrl });
+            return BadRequest("Receipt images must be 5 MB or smaller");
         }
+        if (!AllowedReceiptContentTypes.Contains(file.ContentType))
+        {
+            return BadRequest("Receipt images must be JPEG, PNG, or WebP files");
+        }
+
+        await using var stream = file.OpenReadStream();
+        var blobName = await storageService.UploadFileAsync(
+            stream,
+            file.ContentType,
+            HttpContext.RequestAborted);
+        return Ok(new { blobName });
     }
 }

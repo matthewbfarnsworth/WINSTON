@@ -32,11 +32,9 @@
                                 {{ tripUser.user?.name || 'User' }}: {{ (tripUser.split || 0) | currency }}
                             </p>
                         }
-                        @if (trip.receiptImageUrl) {
+                        @if (trip.receiptImageUrl && trip.id) {
                             <div class="mt-2">
-                                <img [src]="trip.receiptImageUrl"
-                                    alt="Receipt"
-                                    class="max-h-48 rounded border border-slate-200" />
+                                <app-receipt-image [tripId]="trip.id" />
                             </div>
                         }
                     </div>

@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api';
@@ -14,6 +14,7 @@ import { PrimaryButton } from '../../components/primary-button/primary-button';
 import { SmallButton } from '../../components/small-button/small-button';
 import { LinkButton } from '../../components/link-button/link-button';
 import { DangerButton } from '../../components/danger-button/danger-button';
+import { ReceiptImage } from '../../components/receipt-image/receipt-image';
 
 @Component({
   selector: 'app-edit-trip',
@@ -29,12 +30,13 @@ import { DangerButton } from '../../components/danger-button/danger-button';
     PrimaryButton,
     SmallButton,
     LinkButton,
-    DangerButton
+    DangerButton,
+    ReceiptImage
   ],
   templateUrl: './edit-trip.html',
   styleUrl: './edit-trip.css',
 })
-export class EditTrip {
+export class EditTrip implements OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -48,6 +50,7 @@ export class EditTrip {
   protected total = signal(0.00);
   protected notes = signal('');
   protected receiptImageUrl = signal('');
+  protected receiptPreviewUrl = signal('');
   protected tripUsers = signal<TripUser[]>([]);
   protected canAddMoreUsers = computed(() => {
     return this.tripUsers().length < this.allUsers().length;
@@ -145,17 +148,30 @@ export class EditTrip {
   }
 
   protected onFileSelected(file: File) {
+    this.clearReceiptPreview();
+    this.receiptPreviewUrl.set(URL.createObjectURL(file));
     this.isUploading.set(true);
     this.apiService.uploadReceipt(file).subscribe({
       next: (resolution) => {
-        this.receiptImageUrl.set(resolution.url);
+        this.receiptImageUrl.set(resolution.blobName);
         this.isUploading.set(false);
       },
       error: (err) => {
         console.error('Failed to upload receipt', err);
+        this.clearReceiptPreview();
         this.isUploading.set(false);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.clearReceiptPreview();
+  }
+
+  private clearReceiptPreview() {
+    const objectUrl = this.receiptPreviewUrl();
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    this.receiptPreviewUrl.set('');
   }
 
   protected getSummarySplits(): { userName: string; owesAmount: number }[] {

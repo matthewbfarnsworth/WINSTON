@@ -43,7 +43,7 @@ variable "environment" {
 variable "location" {
   description = "Azure region for the resource group."
   type        = string
-  default     = "westus2"
+  default     = "westus3"
 }
 
 variable "allowed_user_object_ids" {
@@ -57,6 +57,16 @@ variable "allowed_user_object_ids" {
       can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", object_id))
     ])
     error_message = "Every allowed_user_object_ids value must be a UUID."
+  }
+}
+
+variable "access_request_email" {
+  description = "Email address that receives access requests from authenticated users outside the allow-list."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[^@ ]+@[^@ ]+\\.[^@ ]+$", trimspace(var.access_request_email)))
+    error_message = "access_request_email must be a valid email address."
   }
 }
 
@@ -76,6 +86,28 @@ variable "receipt_container_name" {
   description = "Blob container used for uploaded receipt images."
   type        = string
   default     = "receipts"
+}
+
+variable "github_repository" {
+  description = "GitHub repository permitted to deploy WINSTON through workload identity federation."
+  type        = string
+  default     = "matthewbfarnsworth/WINSTON"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
+    error_message = "github_repository must use the owner/repository format."
+  }
+}
+
+variable "github_environment" {
+  description = "GitHub environment whose workflows may request the Azure deployment identity."
+  type        = string
+  default     = "production"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]+$", var.github_environment))
+    error_message = "github_environment may contain letters, numbers, periods, underscores, and hyphens."
+  }
 }
 
 variable "tags" {

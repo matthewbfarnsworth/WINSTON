@@ -62,6 +62,8 @@ node_modules/
 
 # Environment
 Winston.UI/src/environments/environment.ts
+Winston.UI/dist/
+Winston.API/wwwroot/
 
 # Terraform
 **/.terraform/*

@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Service, signal } from "@angular/core";
 import { Observable, of, shareReplay, tap } from "rxjs";
-import { User, Trip, Transaction } from "../models";
+import { AccessRequestInfo, User, Trip, Transaction } from "../models";
 import { environment } from "../../environments/environment";
 
 @Service()
@@ -29,6 +29,10 @@ export class ApiService {
         return this.currentUserRequest;
     }
 
+    getAccessRequestInfo(): Observable<AccessRequestInfo> {
+        return this.http.get<AccessRequestInfo>(`${this.apiUrl}/access-request`);
+    }
+
     getBalances(): Observable<{ [userId: string]: number }> {
         return this.http.get<{ [userId: string]: number }>(`${this.apiUrl}/users/balances`);
     }
@@ -53,10 +57,16 @@ export class ApiService {
         return this.http.delete<void>(`${this.apiUrl}/trips/${id}`);
     }
 
-    uploadReceipt(file: File): Observable<{ url: string }> {
+    uploadReceipt(file: File): Observable<{ blobName: string }> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.post<{ url: string }>(`${this.apiUrl}/trips/upload`, formData);
+        return this.http.post<{ blobName: string }>(`${this.apiUrl}/trips/upload`, formData);
+    }
+
+    getReceipt(tripId: string): Observable<Blob> {
+        return this.http.get(`${this.apiUrl}/trips/${tripId}/receipt`, {
+            responseType: 'blob'
+        });
     }
 
     getTransactions(): Observable<Transaction[]> {
