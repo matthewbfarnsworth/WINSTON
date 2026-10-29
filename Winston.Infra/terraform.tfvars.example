@@ -1,10 +1,11 @@
-# Copy this file to terraform.tfvars and replace the two IDs.
+# Copy this file to terraform.tfvars and replace the example values.
 # tenant_id is the directory GUID that owns your Azure subscription, even though
 # WINSTON uses the Microsoft identity platform's "consumers" endpoint at runtime.
 
 subscription_id      = "00000000-0000-0000-0000-000000000000"
 tenant_id            = "00000000-0000-0000-0000-000000000000"
 access_request_email = "owner@example.com"
+github_repository    = "owner/WINSTON"
 
 allowed_user_object_ids = [
   "00000000-0000-0000-0000-000000000000",
@@ -13,5 +14,4 @@ allowed_user_object_ids = [
 # Optional overrides:
 # location             = "westus2"
 # app_service_sku_name = "B1" # Upgrades from the free F1 tier and incurs charges.
-# github_repository    = "owner/repository"
 # github_environment   = "production"

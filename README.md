@@ -1,186 +1,179 @@
-# Winston
-A simple project to keep track of how much money is owed between friends. Made to better learn the Angular frontend and Azure backend.
+# WINSTON
 
-After one person pays for a whole trip, each remaining person owes
-```
-(TotalCost - sum of all PersonalCost) / TotalUsers + PersonalCost
-```
+**Winston Is a Novel System for Tallying Owed Numbers** is a small, full-stack expense-sharing application for friends. It tracks shared trip costs, personal expenses, repayments, and running balances.
 
-Every time you pay someone back for a trip, log your transaction to update the running totals of how much everyone owes each other.
+The project uses Angular, ASP.NET Core, Microsoft Entra ID, Azure SQL, private Azure Blob Storage, and Terraform. It is designed as a portfolio project and as a reproducible example of deploying a secured single-web-app architecture to Azure.
 
-# Project Structure
+## Features
+
+- Microsoft account sign-in through Entra ID
+- Explicit object-ID allow-list for a private group of friends
+- Shared trip and personal-cost calculations
+- Repayment tracking and receipt confirmation
+- Private receipt-image storage
+- Terraform-provisioned Azure infrastructure and app registrations
+- Passwordless GitHub Actions deployment through workload identity federation
+
+## Architecture
+
 ```mermaid
-graph TD
-    UI["Winston.UI (Angular)"] --> API["Winston.API (ASP.NET Core)"]
-    API --> Core["Winston.Core (Class Library)"]
-    API --> DB[("Azure SQL Database")]
-    API --> Blob[("Azure Blob Storage")]
+flowchart LR
+    Browser[Angular SPA] -->|Bearer token| App[ASP.NET Core Web App]
+    App --> SQL[(Azure SQL)]
+    App --> Blob[(Private Blob Storage)]
+    Entra[Microsoft Entra ID] --> Browser
+    GitHub[GitHub Actions OIDC] --> App
 ```
 
-# Setup
+The Angular production build is served by the ASP.NET Core application. This keeps the Azure footprint small: one App Service, one serverless SQL database, and one storage account.
 
-Install Node.js 22, the .NET 10 SDK, Terraform 1.9 or newer, and the Azure CLI. Then sign in to Azure and provision the infrastructure:
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| `Winston.UI` | Angular frontend |
+| `Winston.API` | ASP.NET Core API and static-file host |
+| `Winston.Core` | Domain models and expense calculations |
+| `Winston.Infra` | Terraform and setup helpers |
+| `.github/workflows` | CI and Azure deployment workflows |
+
+## Prerequisites
+
+- Git
+- Node.js 24 and npm 11
+- .NET 10 SDK
+- Terraform 1.9 or newer
+- Azure CLI
+- GitHub CLI for automated GitHub environment setup
+- An Azure subscription and permission to create resources and Entra app registrations
+
+The configuration prefers free or low-cost Azure services, but Azure pricing and free-tier eligibility vary by subscription and region. Review the Terraform plan and Azure pricing before applying it.
+
+## Deploy your own instance
+
+### 1. Clone and sign in
 
 ```bash
+git clone https://github.com/matthewbfarnsworth/WINSTON.git
+cd WINSTON
 az login
-cd Winston.Infra
-cp terraform.tfvars.example terraform.tfvars
-# Fill in terraform.tfvars with your subscription, tenant, contact email, and allowed account OIDs.
-terraform init
-terraform plan
-terraform apply
+gh auth login
 ```
 
-Terraform creates one environment per state; the default state provisions `dev`. Use a separate Terraform state before adding another environment such as `prod`.
+Confirm that the correct Azure subscription is selected:
 
-Copy `Winston.UI/src/environments/environment.example.ts` to `environment.ts` and replace its two placeholders with the `entra_spa_client_id` and `entra_api_client_id` Terraform outputs. For automated deployment, create a GitHub environment named `production`; configure `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, and `AZURE_WEBAPP_NAME` as variables; configure `ENTRA_CLIENT_ID` and `ENTRA_API_CLIENT_ID` as secrets; then run the **Build and Deploy to Azure** workflow.
+```bash
+az account show --query '{name:name, id:id, tenantId:tenantId}'
+```
 
-Add another Microsoft account later with:
+### 2. Configure Terraform
+
+```bash
+cd Winston.Infra
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Edit `terraform.tfvars` with:
+
+- your Azure subscription and tenant IDs;
+- the email address that should receive access requests;
+- your Microsoft account object ID in `allowed_user_object_ids`; and
+- your GitHub repository in `owner/repository` format.
+
+For many Azure accounts, the signed-in object ID is available with:
+
+```bash
+az ad signed-in-user show --query id --output tsv
+```
+
+Provision the infrastructure:
+
+```bash
+terraform init
+terraform plan -out=winston.tfplan
+terraform apply winston.tfplan
+```
+
+Terraform creates a `dev` environment by default in West US 3. Override `environment`, `location`, or other documented variables in `terraform.tfvars` when needed.
+
+> [!IMPORTANT]
+> Terraform state contains generated credentials and connection strings. It is ignored by Git, but it must be stored securely and backed up. This project intentionally uses local state to keep a personal deployment simple and inexpensive.
+
+### 3. Configure GitHub deployment
+
+From `Winston.Infra`, run:
+
+```bash
+./configure-github.sh
+```
+
+The script creates the configured GitHub environment and writes only non-secret identifiers as environment variables. Azure deployment uses short-lived OIDC credentials; it does not require a publish profile or client secret.
+
+Push the application to `master` or manually run the **Deploy to Azure** workflow. The deployed URL is available with:
+
+```bash
+terraform output -raw web_app_url
+```
+
+The free App Service tier can cold-start or stop after reaching its daily compute quota. The SQL configuration uses Azure's serverless free-limit option and auto-pauses after one hour of inactivity.
+
+## Local development
+
+Local development uses the Azure SQL database, storage account, and Entra registrations created by Terraform. From `Winston.Infra`, run:
+
+```bash
+./configure-local.sh
+```
+
+This script replaces WINSTON's local .NET user-secrets and creates the ignored Angular `environment.ts`. It does not write credentials into tracked files.
+
+Start the API and UI in separate terminals from the repository root:
+
+```bash
+dotnet run --project Winston.API
+```
+
+```bash
+npm start --prefix Winston.UI
+```
+
+Open `http://localhost:4200`. The API runs at `http://localhost:5211` and applies pending Entity Framework migrations at startup.
+
+## Manage access
+
+WINSTON accepts authenticated Microsoft accounts only when their `oid` claim appears in the Terraform allow-list. Add one or more people with:
 
 ```bash
 cd Winston.Infra
 ./add-allowed-user.sh <account-oid> [<additional-account-oid> ...]
 ```
 
-# Schema
+The script validates the IDs, creates a Terraform plan, and asks before applying it. Use `--apply` only when an unattended apply is intentional.
 
-### `User`
+Allowed users share the same application data. Only a trip or transaction's creator can edit or delete it, and only a transaction recipient can change its received status.
 
-| Field | Description |
-| :--- | :--- |
-| `Id` | Unique identifier |
-| `Name` | Name of the user |
-| `AvatarUrl` | URL to the avatar image of the user (optional) |
+## Expense calculation
 
-### `Trip`
+For each person on a trip:
 
-| Field | Description |
-| :--- | :--- |
-| `Id` | Unique identifier |
-| `OwnerId` | ID of the user who paid/created the trip |
-| `Name` | Name/title of the trip |
-| `Date` | Date of the trip |
-| `Total` | Total cost of the trip |
-| `TripUsers` | List of users participating in the trip (linked with join table) |
-| `Notes` | Additional notes (optional) |
-| `ReceiptImageUrl` | URL to the uploaded receipt image (optional) |
-
-### `TripUser`
-
-| Field | Description |
-| :--- | :--- |
-| `UserId` | Reference to the user |
-| `TripId` | Reference to the trip |
-| `PersonalCost` | Specific, additional portion of total cost that is just for this user |
-
-### `Transaction`
-
-| Field | Description |
-| :--- | :--- |
-| `Id` | Unique identifier |
-| `SenderId` | Reference to the user sending money |
-| `RecipientId` | Reference to the user receiving money |
-| `Date` | Date of the transaction |
-| `Cost` | Amount paid |
-| `RecipientDidNotReceive` | Flag indicating if the recipient has marked it as not received |
-| `Notes` | Additional notes (optional) |
-
-# Pages
-## Login
-Log in using Microsoft Entra ID
-
-## Home
-A list of how much the logged in `User` owes and is owed.
-For each `User`:
-* if the `User` owes money to the currently logged in `User`, it says
-"`User` owes you $`xx.xx`"
-* if the `User` is owed money by the currently logged in `User`, it says
-"`User` is owed $`xx.xx`"
-* if the `User` neither owes nor is owed money by the currently logged in `User`, no text is displayed
-
-## Edit Trip
-A form to create or edit a new `Trip` object. On creation, `OwnerId` is automatically set to the logged in `User`.
-* An editable title with default "New Trip" (edits `Name`)
-* "Date:" with date input (edits `Date`)
-* "Total:" with money input (edits `TotalCost`)
-* "Users:" accordion list with add button to get a list of `TripUser`, has the owning `User` by default which cannot be deleted
-    * dropdown (edits `UserId`)
-    * input (optional, edits `PersonalCost`)
-* "Upload receipt:" with attachment (uploads image file and edits `ReceiptImageUrl`)
-* "Notes:" with text field
-* "Summary:" with list of "`User` owes you $`xx.xx`" for each user
-* "Save Trip" button
-
-## Edit Transaction
-A form to create or edit a new `Transaction` object. On creation, `OwnerId` is automatically set to the logged in `User`.
-* "Date:" with date input (edits `Date`)
-* "Recipient:" with dropdown (edits `RecipientId`)
-* "Cost:" with money input (edits `Cost`)
-* "Notes:" with text field
-* "Save Transaction" button
-
-## Trips
-A list with the following for each `Trip`:
-* "`Name`:" with accordion list for each `User` in `TripUsers[]`
-    * "`User`: $`xx.xx`" where the amount is `(TotalCost - sum of all PersonalCost) / TotalUsers + PersonalCost`
-* "Edit Trip" button, opens the Edit Trip page for the `Trip`
-
-## Transactions
-A list with the following for each `Transaction`:
-* "`Sender` paid `Recipient` $`xx.xx` on `Date`"
-* "Not Received!" text if `RecipientDidNotReceive` is set
-* "Did Not Receive?" button, which appears for the Recipient if `RecipientDidNotReceive` is not set, and changes to a "Received?" button if `RecipientDidNotReceive` is set
-The list is sorted first in order of ones marked `RecipientDidNotReceive` and then in order of `Date`.
-
-## Settings
-* "Logout" button
-
-# Angular Notes
-
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.4.
-
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
+```text
+share = (trip total - sum of personal costs) / number of people + personal cost
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Rounding differences are assigned to the trip owner so all shares add up exactly to the trip total. The application prevents personal costs from exceeding the trip total.
 
-## Code scaffolding
+## Tear down Azure resources
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Review the destroy plan before approving it:
 
 ```bash
-ng generate --help
+cd Winston.Infra
+terraform plan -destroy
+terraform destroy
 ```
 
-## Building
+Destroying the infrastructure permanently removes the deployed app and its Azure-hosted data. Keep the Terraform state until teardown is complete.
 
-To build the project run:
+## License
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+WINSTON is available under the [MIT License](LICENSE).

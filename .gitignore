@@ -64,6 +64,13 @@ node_modules/
 Winston.UI/src/environments/environment.ts
 Winston.UI/dist/
 Winston.API/wwwroot/
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.publishsettings
+publish/
 
 # Terraform
 **/.terraform/*

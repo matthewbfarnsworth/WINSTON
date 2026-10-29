@@ -91,7 +91,6 @@ variable "receipt_container_name" {
 variable "github_repository" {
   description = "GitHub repository permitted to deploy WINSTON through workload identity federation."
   type        = string
-  default     = "matthewbfarnsworth/WINSTON"
 
   validation {
     condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))

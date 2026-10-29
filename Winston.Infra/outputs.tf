@@ -14,12 +14,12 @@ output "web_app_url" {
 }
 
 output "entra_spa_client_id" {
-  description = "Value for the ENTRA_CLIENT_ID GitHub Actions secret."
+  description = "Value for the ENTRA_CLIENT_ID GitHub Actions variable."
   value       = azuread_application_registration.spa.client_id
 }
 
 output "entra_api_client_id" {
-  description = "Value for the ENTRA_API_CLIENT_ID GitHub Actions secret."
+  description = "Value for the ENTRA_API_CLIENT_ID GitHub Actions variable."
   value       = azuread_application_registration.api.client_id
 }
 
@@ -31,6 +31,16 @@ output "entra_api_scope" {
 output "github_actions_client_id" {
   description = "Value for the AZURE_CLIENT_ID GitHub Actions variable."
   value       = azuread_application_registration.github_deploy.client_id
+}
+
+output "github_repository" {
+  description = "GitHub owner/repository permitted to deploy WINSTON."
+  value       = var.github_repository
+}
+
+output "github_environment" {
+  description = "GitHub environment trusted by the Azure deployment identity."
+  value       = var.github_environment
 }
 
 output "azure_subscription_id" {
@@ -66,5 +76,22 @@ output "sql_admin_login" {
 output "sql_admin_password" {
   description = "Generated Azure SQL administrator password. Keep this value private."
   value       = random_password.sql_admin.result
+  sensitive   = true
+}
+
+output "receipt_container_name" {
+  description = "Blob container used for receipt images."
+  value       = var.receipt_container_name
+}
+
+output "access_request_email" {
+  description = "Email address shown to users requesting access."
+  value       = var.access_request_email
+  sensitive   = true
+}
+
+output "allowed_user_object_ids" {
+  description = "Microsoft account object IDs permitted to use WINSTON."
+  value       = sort(tolist(var.allowed_user_object_ids))
   sensitive   = true
 }
