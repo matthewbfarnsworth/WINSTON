@@ -39,11 +39,20 @@ set_variable() {
     --body "$value"
 }
 
+set_secret() {
+  local name="$1"
+  local value="$2"
+  gh secret set "$name" \
+    --repo "$repository" \
+    --env "$environment" \
+    --body "$value"
+}
+
 set_variable AZURE_CLIENT_ID "$(terraform_output github_actions_client_id)"
 set_variable AZURE_TENANT_ID "$(terraform_output azure_tenant_id)"
 set_variable AZURE_SUBSCRIPTION_ID "$(terraform_output azure_subscription_id)"
-set_variable AZURE_WEBAPP_NAME "$(terraform_output web_app_name)"
 set_variable ENTRA_CLIENT_ID "$(terraform_output entra_spa_client_id)"
 set_variable ENTRA_API_CLIENT_ID "$(terraform_output entra_api_client_id)"
+set_secret AZURE_WEBAPP_NAME "$(terraform_output web_app_name)"
 
 echo "Configured GitHub environment '${environment}' for ${repository}."
