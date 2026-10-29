@@ -1,11 +1,12 @@
 locals {
-  name_prefix         = lower("${var.project_name}-${var.environment}")
-  compact_name_prefix = lower(replace("${var.project_name}${var.environment}", "-", ""))
-  unique_suffix       = random_string.resource_suffix.result
+  deployment_name_prefix = lower("${var.project_name}-${var.environment}")
+  name_prefix            = local.deployment_name_prefix
+  compact_name_prefix    = replace(local.name_prefix, "-", "")
+  unique_suffix          = random_string.resource_suffix.result
 
   resource_group_name  = "${local.name_prefix}-rg"
   service_plan_name    = "${local.name_prefix}-plan"
-  web_app_name         = substr("${local.name_prefix}-${local.unique_suffix}", 0, 60)
+  web_app_name         = coalesce(var.web_app_name, substr("${local.name_prefix}-${local.unique_suffix}", 0, 60))
   sql_server_name      = substr("${local.name_prefix}-sql-${local.unique_suffix}", 0, 63)
   sql_database_name    = "${local.name_prefix}-db"
   storage_account_name = "${substr(local.compact_name_prefix, 0, 18)}${local.unique_suffix}"

@@ -32,11 +32,25 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name included in resource names and tags."
   type        = string
-  default     = "dev"
+  default     = "prod"
 
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{1,8}[a-z0-9]$", var.environment))
     error_message = "environment must contain 3-10 lowercase letters, numbers, or hyphens and start with a letter."
+  }
+}
+
+variable "web_app_name" {
+  description = "Optional globally unique Azure App Service name."
+  type        = string
+  default     = null
+
+  validation {
+    condition = (
+      var.web_app_name == null ||
+      can(regex("^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$", var.web_app_name))
+    )
+    error_message = "web_app_name must contain 2-60 lowercase letters, numbers, or hyphens and cannot start or end with a hyphen."
   }
 }
 

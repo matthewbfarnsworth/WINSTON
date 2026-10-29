@@ -1,7 +1,7 @@
 resource "random_uuid" "api_scope" {}
 
 resource "azuread_application_registration" "api" {
-  display_name                   = "${local.name_prefix}-api"
+  display_name                   = "${local.deployment_name_prefix}-api"
   description                    = "WINSTON protected web API"
   requested_access_token_version = 2
   sign_in_audience               = "PersonalMicrosoftAccount"
@@ -32,7 +32,7 @@ resource "azuread_application_permission_scope" "access_as_user" {
 }
 
 resource "azuread_application_registration" "spa" {
-  display_name                   = "${local.name_prefix}-spa"
+  display_name                   = "${local.deployment_name_prefix}-spa"
   description                    = "WINSTON Angular single-page application"
   requested_access_token_version = 2
   sign_in_audience               = "PersonalMicrosoftAccount"
@@ -62,7 +62,7 @@ resource "azuread_application_api_access" "spa_to_api" {
 }
 
 resource "azuread_application_registration" "github_deploy" {
-  display_name     = "${local.name_prefix}-github-deploy"
+  display_name     = "${local.deployment_name_prefix}-github-deploy"
   description      = "GitHub Actions deployment identity for WINSTON"
   sign_in_audience = "AzureADMyOrg"
 }

@@ -13,5 +13,6 @@ allowed_user_object_ids = [
 
 # Optional overrides:
 # location             = "westus2"
+# web_app_name         = "my-unique-winston-app"
 # app_service_sku_name = "B1" # Upgrades from the free F1 tier and incurs charges.
 # github_environment   = "production"

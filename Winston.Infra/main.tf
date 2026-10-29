@@ -139,5 +139,9 @@ resource "azurerm_linux_web_app" "winston" {
     }
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = local.common_tags
 }
