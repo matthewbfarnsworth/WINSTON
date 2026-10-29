@@ -1,5 +1,5 @@
 # WINSTON
-## (Winston Is A Novel System for Tallying Owed Numbers)
+## (Winston Is a Novel System for Tallying Owed Numbers)
 
 A simple project to keep track of how much money is owed between friends. Made to better learn the Angular frontend and Azure backend.
 
